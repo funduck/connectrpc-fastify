@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { ConnectRPC, Middleware } from 'src/index';
+import { ConnectRPC, Middleware } from '../src/index';
 
 export class TestMiddleware1 implements Middleware {
   static callback = (req: FastifyRequest['raw'], res: FastifyReply['raw']) =>

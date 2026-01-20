@@ -1,4 +1,4 @@
-import { ConnectRPC, OmitConnectrpcFields, Service } from 'src/index';
+import { ConnectRPC, OmitConnectrpcFields, Service } from '../src/index';
 import type {
   SayRequest,
   SayResponse,

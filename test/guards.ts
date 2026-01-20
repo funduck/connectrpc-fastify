@@ -1,4 +1,4 @@
-import { ConnectRPC, ExecutionContext, Guard } from 'src/index';
+import { ConnectRPC, ExecutionContext, Guard } from '../src/index';
 
 export class TestGuard1 implements Guard {
   static callback = (context: ExecutionContext) => true;
