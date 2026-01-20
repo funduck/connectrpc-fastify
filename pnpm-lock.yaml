@@ -18,7 +18,7 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1(@bufbuild/protobuf@2.10.2)(@connectrpc/connect-node@2.1.1(@bufbuild/protobuf@2.10.2)(@connectrpc/connect@2.1.1(@bufbuild/protobuf@2.10.2)))(@connectrpc/connect@2.1.1(@bufbuild/protobuf@2.10.2))(fastify@5.7.1)
       fastify:
-        specifier: ^5.7.1
+        specifier: ^5.6.2
         version: 5.7.1
       type-fest:
         specifier: ^5.4.1
@@ -38,7 +38,7 @@ importers:
         version: 25.0.9
       prettier-plugin-organize-imports:
         specifier: ^4.3.0
-        version: 4.3.0(prettier@3.8.0)(typescript@5.9.3)
+        version: 4.3.0(prettier@3.8.0)(typescript@5.4.5)
 
 packages:
 
@@ -337,11 +337,6 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  typescript@5.9.3:
-    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
@@ -561,10 +556,10 @@ snapshots:
       sonic-boom: 4.2.0
       thread-stream: 4.0.0
 
-  prettier-plugin-organize-imports@4.3.0(prettier@3.8.0)(typescript@5.9.3):
+  prettier-plugin-organize-imports@4.3.0(prettier@3.8.0)(typescript@5.4.5):
     dependencies:
       prettier: 3.8.0
-      typescript: 5.9.3
+      typescript: 5.4.5
 
   prettier@3.8.0: {}
 
@@ -615,7 +610,5 @@ snapshots:
       tagged-tag: 1.0.0
 
   typescript@5.4.5: {}
-
-  typescript@5.9.3: {}
 
   undici-types@7.16.0: {}
