@@ -1,0 +1,27 @@
+{
+  "name": "@funduck/connectrpc-fastify",
+  "version": "1.0.0",
+  "author": "Oleg Milekhin <qlfunduck@gmail.com>",
+  "description": "Wrapper for official @connectrpc/connect and fastify. Simplifies configuration, type safe binding to controller, simplifies use of middlewares and guards.",
+  "main": "index.js",
+  "scripts": {
+    "compile-proto": "cd test && npx buf dep update; npx buf lint; npx buf generate",
+    "demo-test": "cd test && DEBUG=true npx tsx e2e-demo.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.10.2",
+    "@connectrpc/connect": "^2.1.1",
+    "@connectrpc/connect-fastify": "^2.1.1",
+    "fastify": "^5.7.1",
+    "type-fest": "^5.4.1"
+  },
+  "devDependencies": {
+    "@bufbuild/buf": "^1.64.0",
+    "@bufbuild/protoc-gen-es": "^2.10.2",
+    "@connectrpc/connect-node": "^2.1.1",
+    "@types/node": "^25.0.9",
+    "prettier-plugin-organize-imports": "^4.3.0"
+  }
+}

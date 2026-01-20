@@ -1,0 +1,2 @@
+ignoredBuiltDependencies:
+  - '@bufbuild/buf'
