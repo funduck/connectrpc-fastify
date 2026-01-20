@@ -9,7 +9,7 @@
     "demo-test": "cd test && DEBUG=true npx tsx e2e-demo.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@bufbuild/protobuf": "^2.10.2",
     "@connectrpc/connect": "^2.1.1",
