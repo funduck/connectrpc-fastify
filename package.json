@@ -7,8 +7,9 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "npx rimraf dist; tsc -p tsconfig.build.json",
-    "compile-proto": "cd test && npx buf dep update; npx buf lint; npx buf generate",
-    "test": "npm run compile-proto && cd test && DEBUG=true npx tsx e2e-demo.ts",
+    "compile-proto": "cd test/demo && npx buf dep update; npx buf lint; npx buf generate",
+    "test:demo": "npm run compile-proto && cd test/demo && DEBUG=true npx tsx e2e-demo.ts",
+    "test": "echo \"No tests specified\" && exit 1",
     "publish:check": "npm test && npm run build && npm publish --tag latest --access public --dry-run",
     "publish:latest": "npm publish --tag latest --access public"
   },

@@ -3,7 +3,6 @@ import { ConnectRouter } from '@connectrpc/connect';
 import { fastifyConnectPlugin } from '@connectrpc/connect-fastify';
 import { Compression } from '@connectrpc/connect/protocol';
 import { FastifyInstance } from 'fastify';
-import { getGuards } from './guards';
 import { discoverMethodMappings, logger } from './helpers';
 import { ControllersStore, RouteMetadataStore } from './stores';
 
@@ -17,13 +16,6 @@ export async function registerFastifyPlugin(
   const implementations = new Map<GenService<any>, any>();
 
   for (const { instance, service } of ControllersStore.values()) {
-    const guards = getGuards(instance);
-    if (guards.length > 0) {
-      logger.log(
-        `Found ${guards.length} guards on controller ${instance.constructor.name}`,
-      );
-    }
-
     const methodMappings = discoverMethodMappings(instance.__proto__, service);
 
     // Create the implementation object

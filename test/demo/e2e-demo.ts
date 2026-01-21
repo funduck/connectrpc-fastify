@@ -1,5 +1,5 @@
 import { create } from '@bufbuild/protobuf';
-import { createClient } from '@connectrpc/connect';
+import { Client, createClient } from '@connectrpc/connect';
 import { createConnectTransport } from '@connectrpc/connect-node';
 import {
   ElizaService,
@@ -18,7 +18,10 @@ const transport = createConnectTransport({
   httpVersion: '1.1',
 });
 
-export const client = createClient(ElizaService, transport);
+export const client: Client<typeof ElizaService> = createClient(
+  ElizaService,
+  transport,
+);
 
 const mockAuthorizationToken = 'Bearer mock-token-123';
 
@@ -33,7 +36,9 @@ function prepareMiddlewares() {
   testMiddlewareCalled[3] = false;
 
   TestMiddleware1.callback = (req, res) => {
-    console.log(`Middleware 1 called for request: ${req.url}`);
+    console.log(
+      `Middleware 1 called for request: ${req.url} ${JSON.stringify(req.headers)}`,
+    );
     testMiddlewareCalled[1] = true;
     return null;
   };

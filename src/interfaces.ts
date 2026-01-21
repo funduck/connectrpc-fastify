@@ -1,4 +1,5 @@
 import type { GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
+import { HandlerContext } from '@connectrpc/connect';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { OmitConnectrpcFields } from './types';
 
@@ -38,18 +39,22 @@ type ExtractOutput<T> = T extends { output: GenMessage<infer M> } ? M : never;
 type ServiceMethod<T> = T extends { methodKind: 'unary' }
   ? (
       request: ExtractInput<T>,
+      context?: HandlerContext,
     ) => Promise<OmitConnectrpcFields<ExtractOutput<T>>>
   : T extends { methodKind: 'server_streaming' }
     ? (
         request: ExtractInput<T>,
+        context?: HandlerContext,
       ) => AsyncIterable<OmitConnectrpcFields<ExtractOutput<T>>>
     : T extends { methodKind: 'client_streaming' }
       ? (
           request: AsyncIterable<ExtractInput<T>>,
+          context?: HandlerContext,
         ) => Promise<OmitConnectrpcFields<ExtractOutput<T>>>
       : T extends { methodKind: 'bidi_streaming' }
         ? (
             request: AsyncIterable<ExtractInput<T>>,
+            context?: HandlerContext,
           ) => AsyncIterable<OmitConnectrpcFields<ExtractOutput<T>>>
         : never;
 

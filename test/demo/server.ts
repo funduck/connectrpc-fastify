@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { ConnectRPC, middlewareConfig } from '../src/index';
+import { ConnectRPC, middlewareConfig } from '../../src/index';
 import { ElizaController } from './controller';
 import { ElizaService } from './gen/connectrpc/eliza/v1/eliza_pb';
 import { TestGuard1 } from './guards';

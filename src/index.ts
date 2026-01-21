@@ -1,5 +1,7 @@
 export function printMsg() {
-  console.log('Thanks for using connectrpc-fastify!');
+  console.error(
+    'connectrpc-fastify is in development mode! not ready for production yet!',
+  );
 }
 
 export { ConnectRPC } from './connectrpc';

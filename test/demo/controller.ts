@@ -1,10 +1,19 @@
-import { ConnectRPC, OmitConnectrpcFields, Service } from '../src/index';
+import { HandlerContext } from '@connectrpc/connect';
+import { ConnectRPC, OmitConnectrpcFields, Service } from '../../src/index';
 import type {
   SayRequest,
   SayResponse,
   SayResponses,
 } from './gen/connectrpc/eliza/v1/eliza_pb';
 import { ElizaService } from './gen/connectrpc/eliza/v1/eliza_pb';
+
+function iteratorToArray<T>(iter: Iterable<T>): T[] {
+  const result: T[] = [];
+  for (const item of iter) {
+    result.push(item);
+  }
+  return result;
+}
 
 export class ElizaController implements Service<typeof ElizaService> {
   constructor() {
@@ -19,10 +28,20 @@ export class ElizaController implements Service<typeof ElizaService> {
    */
   async say(
     request: SayRequest,
+    context: HandlerContext,
 
     // You can leave out the return type, it will be inferred from the interface
   ) {
-    console.log(`Controller received request Say`);
+    // console.log(`Controller received request Say ${JSON.stringify(context)}`);
+    console.log(
+      `Controller received request Say ${JSON.stringify({
+        protocolName: context.protocolName,
+        url: context.url,
+        timeoutMs: context.timeoutMs(),
+        requestHeader: iteratorToArray(context.requestHeader.entries()),
+        responseHeader: iteratorToArray(context.responseHeader.entries()),
+      })}`,
+    );
     return {
       sentence: `You said: ${request.sentence}`,
     };
