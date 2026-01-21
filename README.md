@@ -1,4 +1,7 @@
 # Connectrpc Fastify Wrapper
+!BETA
+
+Code is not production ready.
 
 ## Description
 
