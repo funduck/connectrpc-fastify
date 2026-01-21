@@ -24,7 +24,7 @@ This library allows you to:
 *Bidirectional streaming RPC is currently out of scope because it requires HTTP/2, which is unstable on public networks. In practice, HTTP/1 provides more consistent performance.*
 
 ## How To Use
-You can check out `test` directory for a complete example of server and client.
+You can check out `test` directory for a complete example of server and client. Start reading from `test/server.ts`.
 
 ### Controllers
 Controller must implement the service interface and register itself with `ConnectRPC.registerController` in the constructor.
