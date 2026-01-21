@@ -1,3 +1,3 @@
-node_modules
 .npmrc
-publish.sh
+node_modules
+dist

@@ -1,4 +1,4 @@
-import { OptionalKeysOf, Primitive, RequiredKeysOf } from 'type-fest';
+import type { OptionalKeysOf, Primitive, RequiredKeysOf } from 'type-fest';
 
 export type OmitFieldsDeep<T, K extends keyof any> = T extends Primitive | Date
   ? T
