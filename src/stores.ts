@@ -17,6 +17,11 @@ class ControllersStoreClass {
     }));
   }
 
+  // For testing purposes
+  clear() {
+    this.controllers.clear();
+  }
+
   registerInstance<T extends GenServiceMethods>(
     self: Service<GenService<T>>,
     service: GenService<T>,
@@ -46,6 +51,11 @@ export const ControllersStore = new ControllersStoreClass();
  */
 class MiddlewareStoreClass {
   private middlewares = new Map<Type<Middleware>, Middleware>();
+
+  // For testing purposes
+  clear() {
+    this.middlewares.clear();
+  }
 
   /**
    * Register a middleware instance from its constructor
@@ -92,6 +102,11 @@ class RouteMetadataStoreClass {
       methodName: string;
     }
   >();
+
+  // For testing purposes
+  clear() {
+    this.routes.clear();
+  }
 
   /**
    * Register route metadata for a specific service method
@@ -143,6 +158,11 @@ export const RouteMetadataStore = new RouteMetadataStoreClass();
  */
 class GuardsStoreClass {
   private guards = new Map<Type<Guard>, Guard>();
+
+  // For testing purposes
+  clear() {
+    this.guards.clear();
+  }
 
   /**
    * Register a guard instance from its constructor

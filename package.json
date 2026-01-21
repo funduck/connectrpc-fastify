@@ -9,7 +9,8 @@
     "build": "npx rimraf dist; tsc -p tsconfig.build.json",
     "compile-proto": "cd test/demo && npx buf dep update; npx buf lint; npx buf generate",
     "test:demo": "npm run compile-proto && cd test/demo && DEBUG=true npx tsx e2e-demo.ts",
-    "test": "echo \"No tests specified\" && exit 1",
+    "test": "npm run compile-proto && jest --verbose",
+    "test:coverage": "npm run compile-proto && jest --coverage --runInBand",
     "publish:check": "npm test && npm run build && npm publish --tag latest --access public --dry-run",
     "publish:latest": "npm publish --tag latest --access public"
   },
@@ -25,8 +26,11 @@
     "@bufbuild/protoc-gen-es": "^2.10.2",
     "@connectrpc/connect": "^2.1.1",
     "@connectrpc/connect-node": "^2.1.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.0.9",
+    "jest": "^30.2.0",
     "prettier-plugin-organize-imports": "^4.3.0",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }

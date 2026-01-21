@@ -7,15 +7,20 @@ import type {
 } from './gen/connectrpc/eliza/v1/eliza_pb';
 import { ElizaService } from './gen/connectrpc/eliza/v1/eliza_pb';
 
-function iteratorToArray<T>(iter: Iterable<T>): T[] {
-  const result: T[] = [];
-  for (const item of iter) {
-    result.push(item);
-  }
-  return result;
-}
-
 export class ElizaController implements Service<typeof ElizaService> {
+  static sayCallback: (
+    request: SayRequest,
+    context: HandlerContext,
+  ) => undefined;
+  static listenManyCallback: (
+    request: SayRequest,
+    context: HandlerContext,
+  ) => undefined;
+  static sayManyCallback: (
+    request: AsyncIterable<SayRequest>,
+    context: HandlerContext,
+  ) => undefined;
+
   constructor() {
     ConnectRPC.registerController(this, ElizaService);
   }
@@ -32,16 +37,7 @@ export class ElizaController implements Service<typeof ElizaService> {
 
     // You can leave out the return type, it will be inferred from the interface
   ) {
-    // console.log(`Controller received request Say ${JSON.stringify(context)}`);
-    console.log(
-      `Controller received request Say ${JSON.stringify({
-        protocolName: context.protocolName,
-        url: context.url,
-        timeoutMs: context.timeoutMs(),
-        requestHeader: iteratorToArray(context.requestHeader.entries()),
-        responseHeader: iteratorToArray(context.responseHeader.entries()),
-      })}`,
-    );
+    ElizaController.sayCallback?.(request, context);
     return {
       sentence: `You said: ${request.sentence}`,
     };
@@ -53,10 +49,10 @@ export class ElizaController implements Service<typeof ElizaService> {
    */
   async sayMany(
     request: AsyncIterable<SayRequest>,
-
+    context: HandlerContext,
     // You can specify the return type if you want, but you always need to use OmitConnectrpcFields<> because ConnectRPC adds extra fields internally
   ): Promise<OmitConnectrpcFields<SayResponses>> {
-    console.log(`Controller received request SayMany`);
+    ElizaController.sayManyCallback?.(request, context);
 
     const responses: OmitConnectrpcFields<SayResponse>[] = [];
 
@@ -75,8 +71,8 @@ export class ElizaController implements Service<typeof ElizaService> {
    * Server Streaming RPC: ListenMany
    * Client sends one request, server sends multiple responses
    */
-  async *listenMany(request: SayRequest) {
-    console.log(`Controller received request ListenMany`);
+  async *listenMany(request: SayRequest, context: HandlerContext) {
+    ElizaController.listenManyCallback?.(request, context);
 
     const words = request.sentence.split(' ');
 

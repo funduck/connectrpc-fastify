@@ -71,19 +71,19 @@ export function convertMiddlewareToHook(
 
 export let logger: Logger = {
   log: (...args: any[]) => {
-    console.info(...args);
+    // console.info(...args);
   },
   error: (...args: any[]) => {
-    console.error(...args);
+    // console.error(...args);
   },
   warn: (...args: any[]) => {
-    console.warn(...args);
+    // console.warn(...args);
   },
   debug: (...args: any[]) => {
-    console.debug(...args);
+    // console.debug(...args);
   },
   verbose: (...args: any[]) => {
-    console.log(...args);
+    // console.log(...args);
   },
 };
 
