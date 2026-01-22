@@ -5,12 +5,10 @@ Code is not production ready.
 
 ## Description
 
-This is a wrapper for [Connectrpc](https://github.com/connectrpc/connect-es) using the [Fastify](https://github.com/fastify/fastify) server.
-
+This is a wrapper for [Connectrpc](https://github.com/connectrpc/connect-es) using the [Fastify](https://github.com/fastify/fastify) server.  
 If you are comfortable with HTTP/1 only and want a compact, ready-to-use setup, this repository is for you.
 
-It simplifies the binding of controllers and middlewares.
-
+It simplifies the binding of controllers and middlewares.  
 I use it as a basis for integration into Nestjs, which will be implemented [here](https://github.com/funduck/connectrpc-fastify-nestjs).
 
 
@@ -32,7 +30,7 @@ You can check out `test` directory for a complete example of server and client. 
 ### Controllers
 Controller must implement the service interface and register itself with `ConnectRPC.registerController` in the constructor.
 
-Controller methods receive `HandlerContext` which provides access to request headers, context values, and other metadata.
+Controller methods receive original Connectrpc's `HandlerContext` which provides access to request headers, context values, and other metadata.
 
 ```TS
 import type { HandlerContext } from '@connectrpc/connect';
@@ -75,7 +73,7 @@ try {
 ```
 
 ### Middlewares
-Middlewares run as Fastify hooks and have access to raw request/response objects.
+Middlewares run as Fastify hooks and have access to raw request/response objects and context values which can be retrieved using `getCustomContextValues` helper.
 
 Middleware must implement `Middleware` interface and register itself with `ConnectRPC.registerMiddleware` in the constructor.
 ```TS
@@ -97,7 +95,10 @@ export class AuthMiddleware implements Middleware {
 }
 ```
 
-Create an instance of the middleware before registering the ConnectRPC plugin.
+Create an instance of the middleware before registering the ConnectRPC plugin.  
+And then initialize middlewares using `ConnectRPC.initMiddlewares` method.  
+You can configure middleware to run globally for all services and methods, for specific service only, or for specific method only.  
+For type safety use `middlewareConfig` helper.
 ```TS
 const fastify = Fastify({ logger: true });
 
@@ -107,12 +108,36 @@ new AuthMiddleware();
 await ConnectRPC.registerFastifyPlugin(fastify);
 
 ConnectRPC.initMiddlewares(fastify, [
-    middlewareConfig(AuthMiddleware), // Global middleware for all services and methods
-    // middlewareConfig(AuthMiddleware, ElizaService), // Middleware for all ElizaService methods
-    // middlewareConfig(AuthMiddleware, ElizaService, ['say']), // Middleware for specific method only
+    middlewareConfig(AuthMiddleware), // Global - for all services and methods
+    // middlewareConfig(AuthMiddleware, ElizaService), // for all ElizaService methods
+    // middlewareConfig(AuthMiddleware, ElizaService, ['say']), // for specific method only
 ]);
 
 await fastify.listen({ port: 3000 });
+```
+
+## Using Context Values
+This is original `ContextValues`, so you need to create context keys using `createContextKey` helper from Connectrpc.
+```TS
+import { createContextKey } from '@connectrpc/connect';
+
+const authKey = createContextKey(''); // '' as default value
+```
+
+To use context values in middleware, retrieve them using `getCustomContextValues` helper.
+```TS
+import { getCustomContextValues } from '@funduck/connectrpc-fastify';
+
+// In middleware "use" method
+const authHeader = req.headers['authorization'];
+const contextValues = getCustomContextValues(req);
+contextValues.set(authKey, authHeader);
+```
+
+To use context values in controller, retrieve them from `HandlerContext`.
+```TS
+// In controller method
+const authValue = context.values.get(authKey);
 ```
 
 ## Feedback
