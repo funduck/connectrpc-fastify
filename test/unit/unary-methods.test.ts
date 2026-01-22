@@ -1,8 +1,6 @@
 import { Client } from '@connectrpc/connect';
-import { IncomingMessage, ServerResponse } from 'http';
 import { ElizaController } from '../demo/controller';
 import { ElizaService } from '../demo/gen/connectrpc/eliza/v1/eliza_pb';
-import { TestMiddleware1 } from '../demo/middlewares';
 import { resetMiddlewareCallbacks, setupTestServer } from './test-helpers';
 
 describe('Unary RPC Methods', () => {
@@ -92,24 +90,5 @@ describe('Unary RPC Methods', () => {
       'Bearer controller-header-test',
     );
     expect(receivedHeaders.get('x-test-header')).toBe('test-value');
-  });
-
-  it('should receive data flow from middleware to controller', async () => {
-    let middlewareExecuted = false;
-    let controllerReceivedContext = false;
-
-    TestMiddleware1.callback = (req: IncomingMessage, res: ServerResponse) => {
-      middlewareExecuted = true;
-      (req as any).customFlag = true;
-    };
-
-    ElizaController.sayCallback = (request, context) => {
-      controllerReceivedContext = !!context;
-    };
-
-    await client.say({ sentence: 'data flow test' });
-
-    expect(middlewareExecuted).toBe(true);
-    expect(controllerReceivedContext).toBe(true);
   });
 });

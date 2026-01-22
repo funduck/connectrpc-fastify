@@ -5,7 +5,6 @@ import {
   ElizaService,
   SayRequestSchema,
 } from './gen/connectrpc/eliza/v1/eliza_pb';
-import { TestGuard1 } from './guards';
 import {
   TestMiddleware1,
   TestMiddleware2,
@@ -40,32 +39,14 @@ function prepareMiddlewares() {
       `Middleware 1 called for request: ${req.url} ${JSON.stringify(req.headers)}`,
     );
     testMiddlewareCalled[1] = true;
-    return null;
   };
   TestMiddleware2.callback = (req, res) => {
     console.log(`Middleware 2 called for request: ${req.url}`);
     testMiddlewareCalled[2] = true;
-    return null;
   };
   TestMiddleware3.callback = (req, res) => {
     console.log(`Middleware 3 called for request: ${req.url}`);
     testMiddlewareCalled[3] = true;
-    return null;
-  };
-}
-
-let testGuardCalled = {
-  1: false,
-};
-function prepareGuards() {
-  testGuardCalled[1] = false;
-  TestGuard1.callback = (context) => {
-    console.log(
-      `Guard 1 called for request:`,
-      context.switchToHttp().getRequest().url,
-    );
-    testGuardCalled[1] = true;
-    return true;
   };
 }
 
@@ -76,7 +57,6 @@ async function testUnary() {
 
   try {
     prepareMiddlewares();
-    prepareGuards();
 
     const response = await client.say(
       { sentence },
@@ -102,11 +82,6 @@ async function testUnary() {
       );
     }
 
-    // Check that the guard was called
-    if (!testGuardCalled[1]) {
-      throw new Error('Guard 1 was not called');
-    }
-
     console.log('✅ Unary RPC test passed\n');
     return true;
   } catch (error) {
@@ -122,7 +97,6 @@ async function testClientStreaming() {
 
   try {
     prepareMiddlewares();
-    prepareGuards();
 
     // Create an async generator to send multiple requests
     async function* generateRequests() {
@@ -159,11 +133,6 @@ async function testClientStreaming() {
       );
     }
 
-    // Check that the guard was called
-    if (!testGuardCalled[1]) {
-      throw new Error('Guard 1 was not called');
-    }
-
     console.log('✅ Client Streaming RPC test passed\n');
     return true;
   } catch (error) {
@@ -180,7 +149,6 @@ async function testServerStreaming() {
 
   try {
     prepareMiddlewares();
-    prepareGuards();
 
     let count = 0;
     for await (const response of client.listenMany(
@@ -210,10 +178,6 @@ async function testServerStreaming() {
           testMiddlewareCalled,
         )}`,
       );
-    }
-    // Check that the guard was called
-    if (!testGuardCalled[1]) {
-      throw new Error('Guard 1 was not called');
     }
 
     console.log(

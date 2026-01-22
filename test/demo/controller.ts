@@ -1,4 +1,4 @@
-import { HandlerContext } from '@connectrpc/connect';
+import type { HandlerContext } from '@connectrpc/connect';
 import { ConnectRPC, OmitConnectrpcFields, Service } from '../../src/index';
 import type {
   SayRequest,
@@ -28,8 +28,6 @@ export class ElizaController implements Service<typeof ElizaService> {
   /**
    * Unary RPC: Say
    * Client sends one request, server sends one response
-   *
-   * For demonstration, this method is decorated with @SkipAuthGuard to bypass authentication.
    */
   async say(
     request: SayRequest,
@@ -38,6 +36,7 @@ export class ElizaController implements Service<typeof ElizaService> {
     // You can leave out the return type, it will be inferred from the interface
   ) {
     ElizaController.sayCallback?.(request, context);
+
     return {
       sentence: `You said: ${request.sentence}`,
     };

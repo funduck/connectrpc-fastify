@@ -90,3 +90,10 @@ export let logger: Logger = {
 export function setLogger(customLogger: Logger) {
   logger = customLogger;
 }
+
+/**
+ * Generate a unique request ID
+ */
+export function generateRequestId(): string {
+  return `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+}

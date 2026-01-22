@@ -9,7 +9,7 @@ This is a wrapper for [Connectrpc](https://github.com/connectrpc/connect-es) usi
 
 If you are comfortable with HTTP/1 only and want a compact, ready-to-use setup, this repository is for you.
 
-It simplifies the binding of controllers, middlewares, and guards.
+It simplifies the binding of controllers and middlewares.
 
 I use it as a basis for integration into Nestjs, which will be implemented [here](https://github.com/funduck/connectrpc-fastify-nestjs).
 
@@ -21,17 +21,22 @@ This library allows you to:
 * Perform RPC with simple request and response messages
 * Perform RPC with streaming responses
 * Perform RPC with streaming requests
-* Use middlewares
-* Use global guards
+* Use middlewares with Fastify hooks
+* Access HandlerContext in controllers (headers, context values, etc.)
 
 *Bidirectional streaming RPC is currently out of scope because it requires HTTP/2, which is unstable on public networks. In practice, HTTP/1 provides more consistent performance.*
 
 ## How To Use
-You can check out `test` directory for a complete example of server and client. Start reading from `test/server.ts`.
+You can check out `test` directory for a complete example of server and client. Start reading from `test/demo/server.ts`.
 
 ### Controllers
 Controller must implement the service interface and register itself with `ConnectRPC.registerController` in the constructor.
+
+Controller methods receive `HandlerContext` which provides access to request headers, context values, and other metadata.
+
 ```TS
+import type { HandlerContext } from '@connectrpc/connect';
+
 export class ElizaController implements Service<typeof ElizaService> {
   constructor() {
     ConnectRPC.registerController(this, ElizaService);
@@ -39,7 +44,11 @@ export class ElizaController implements Service<typeof ElizaService> {
 
   async say(
     request: SayRequest,
+    context: HandlerContext,
   ) {
+    // Access headers from context
+    const authHeader = context.requestHeader.get('authorization');
+    
     return {
       sentence: `You said: ${request.sentence}`,
     };
@@ -66,91 +75,44 @@ try {
 ```
 
 ### Middlewares
-You can use middlewares for pre-processing requests.
+Middlewares run as Fastify hooks and have access to raw request/response objects.
 
 Middleware must implement `Middleware` interface and register itself with `ConnectRPC.registerMiddleware` in the constructor.
 ```TS
-export class TestMiddleware1 implements Middleware {
+export class AuthMiddleware implements Middleware {
   constructor() {
     ConnectRPC.registerMiddleware(this);
   }
 
   use(req: FastifyRequest['raw'], res: FastifyReply['raw'], next: () => void) {
+    // Check authentication
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+      res.statusCode = 401;
+      res.end('Unauthorized');
+      return;
+    }
     next();
   }
 }
 ```
 
-Then create an instance of the middleware before registering the ConnectRPC plugin.
+Create an instance of the middleware before registering the ConnectRPC plugin.
 ```TS
-const fastify = Fastify({
-    logger: true,
-});
+const fastify = Fastify({ logger: true });
 
 new ElizaController();
-
-new TestMiddleware1();
+new AuthMiddleware();
 
 await ConnectRPC.registerFastifyPlugin(fastify);
 
 ConnectRPC.initMiddlewares(fastify, [
-    middlewareConfig(TestMiddleware1), // Global middleware for all services and methods
-    //middlewareConfig(TestMiddleware1, ElizaService), // Middleware for all ElizaService methods
-    //middlewareConfig(TestMiddleware1, ElizaService, ['say']), // Middleware for ElizaService's say method only
+    middlewareConfig(AuthMiddleware), // Global middleware for all services and methods
+    // middlewareConfig(AuthMiddleware, ElizaService), // Middleware for all ElizaService methods
+    // middlewareConfig(AuthMiddleware, ElizaService, ['say']), // Middleware for specific method only
 ]);
 
-try {
-    await fastify.listen({ port: 3000 });
-} catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
-}
-```
-
-### Guards
-Guards are used to restrict access to certain services or methods.
-
-Guard must implement `Guard` interface and register itself with `ConnectRPC.registerGuard` in the constructor.
-```TS
-export class TestGuard1 implements Guard {
-  constructor() {
-    ConnectRPC.registerGuard(this);
-  }
-
-  canActivate(context: ExecutionContext): boolean {
-    return true;
-  }
-}
-```
-
-Then create an instance of the guard before registering the ConnectRPC plugin and initialize it similarly to middlewares.
-```TS
-const fastify = Fastify({
-    logger: true,
-});
-
-new ElizaController();
-
-new TestMiddleware1();
-
-new TestGuard1();
-
-await ConnectRPC.registerFastifyPlugin(fastify);
-
-ConnectRPC.initMiddlewares(fastify, [
-    middlewareConfig(TestMiddleware1), // Global middleware for all services and methods
-    // middlewareConfig(TestMiddleware1, ElizaService), // Middleware for all ElizaService methods
-    // middlewareConfig(TestMiddleware1, ElizaService, ['say']), // Middleware for ElizaService's say method only
-]);
-
-ConnectRPC.initGuards(fastify);
-
-try {
-    await fastify.listen({ port: 3000 });
-} catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
-}
+await fastify.listen({ port: 3000 });
 ```
 
 ## Feedback

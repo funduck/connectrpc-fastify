@@ -4,6 +4,7 @@ import { fastifyConnectPlugin } from '@connectrpc/connect-fastify';
 import { Compression } from '@connectrpc/connect/protocol';
 import { FastifyInstance } from 'fastify';
 import { discoverMethodMappings, logger } from './helpers';
+import { contextInterceptor } from './interceptors';
 import { ControllersStore, RouteMetadataStore } from './stores';
 
 export async function registerFastifyPlugin(
@@ -35,9 +36,7 @@ export async function registerFastifyPlugin(
         if (controllerMethod) {
           // Bind the method with proper 'this' context
           const bindedMethod = controllerMethod.bind(instance);
-          implementation[methodName] = (...args: any[]) => {
-            return bindedMethod(...args);
-          };
+          implementation[methodName] = bindedMethod;
 
           // Store route metadata for guards and interceptors
           RouteMetadataStore.registerRoute(
@@ -84,6 +83,7 @@ export async function registerFastifyPlugin(
     grpcWeb: false,
     connect: true,
     acceptCompression: options.acceptCompression ?? [],
+    interceptors: [contextInterceptor],
     routes: routes,
   });
 

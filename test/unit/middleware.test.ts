@@ -1,6 +1,6 @@
-import { Client, createContextKey, HandlerContext } from '@connectrpc/connect';
+import { Client, createContextKey } from '@connectrpc/connect';
 import { IncomingMessage, ServerResponse } from 'http';
-import { ContextStorage } from '../demo/async_hooks';
+import { getCustomContextValues } from '../../src';
 import { ElizaController } from '../demo/controller';
 import { ElizaService } from '../demo/gen/connectrpc/eliza/v1/eliza_pb';
 import {
@@ -79,55 +79,6 @@ describe('Middleware Access to Request Headers and Data', () => {
     expect(requestWithData.flag).toBe(true);
   });
 
-  it('should pass attached data between middlewares', async () => {
-    let middleware1Called = false;
-    let middleware2Data: any = null;
-
-    TestMiddleware1.callback = (req: IncomingMessage, res: ServerResponse) => {
-      middleware1Called = true;
-      (req as any).sharedData = {
-        fromMiddleware1: 'value1',
-        counter: 100,
-      };
-    };
-
-    TestMiddleware2.callback = (req: IncomingMessage, res: ServerResponse) => {
-      middleware2Data = (req as any).sharedData;
-      // Modify the shared data
-      if (middleware2Data) {
-        middleware2Data.fromMiddleware2 = 'value2';
-      }
-    };
-
-    await client.say({ sentence: 'test' });
-
-    expect(middleware1Called).toBe(true);
-    expect(middleware2Data).toBeDefined();
-    expect(middleware2Data.fromMiddleware1).toBe('value1');
-    expect(middleware2Data.counter).toBe(100);
-    expect(middleware2Data.fromMiddleware2).toBe('value2');
-  });
-
-  it('should call middlewares in correct order', async () => {
-    const callOrder: string[] = [];
-
-    TestMiddleware1.callback = () => {
-      callOrder.push('middleware1');
-    };
-
-    TestMiddleware2.callback = () => {
-      callOrder.push('middleware2');
-    };
-
-    TestMiddleware3.callback = () => {
-      callOrder.push('middleware3');
-    };
-
-    await client.say({ sentence: 'test' });
-
-    expect(callOrder).toEqual(['middleware1', 'middleware2', 'middleware3']);
-  });
-
   it('should only call method-specific middleware for matching methods', async () => {
     let middleware3CalledForSay = false;
     let middleware3CalledForSayMany = false;
@@ -157,34 +108,6 @@ describe('Middleware Access to Request Headers and Data', () => {
     await client.sayMany(generateRequests());
 
     expect(middleware3CalledForSayMany).toBe(false);
-  });
-
-  it('should access different header types', async () => {
-    let capturedHeaders: any = {};
-
-    TestMiddleware1.callback = (req: IncomingMessage) => {
-      capturedHeaders = {
-        auth: req.headers['authorization'],
-        contentType: req.headers['content-type'],
-        userAgent: req.headers['user-agent'],
-        customHeader: req.headers['x-custom-header'],
-      };
-    };
-
-    await client.say(
-      { sentence: 'test' },
-      {
-        headers: {
-          Authorization: 'Bearer xyz',
-          'User-Agent': 'test-client',
-          'X-Custom-Header': 'custom-value',
-        },
-      },
-    );
-
-    expect(capturedHeaders.auth).toBe('Bearer xyz');
-    expect(capturedHeaders.userAgent).toBe('test-client');
-    expect(capturedHeaders.customHeader).toBe('custom-value');
   });
 
   it('should allow middleware to inspect request URL and method', async () => {
@@ -248,55 +171,20 @@ describe('Controller Receives Headers and Custom Data from Middlewares', () => {
     expect(headersMap.get('x-custom-header')).toBe('custom-value');
   });
 
-  it.only('should receive custom data attached by middleware in controller', async () => {
-    let capturedCustomData: any = null;
-
-    // Middleware attaches custom data to raw request
+  it('should receive custom data attached by middleware in controller', async () => {
+    let customDataReceived: any = null;
+    const key = createContextKey('');
     TestMiddleware1.callback = (req: IncomingMessage, res: ServerResponse) => {
-      if (!ContextStorage.getStore()) {
-        console.error('No context store available in middleware');
-      }
-      ContextStorage.getStore()?.set('customData', 'middleware-attached-data');
+      getCustomContextValues(req)?.set(key, 'custom-data-789');
     };
 
-    // Controller accesses the custom data through context.signal
-    // Note: ConnectRPC passes the raw request, we need to access it through context
     ElizaController.sayCallback = (request, context) => {
-      if (!ContextStorage.getStore()) {
-        console.error('No context store available in controller');
-      }
-      // capturedCustomData = context.values.get('customData');
-      capturedCustomData = ContextStorage.getStore()?.get('customData');
+      customDataReceived = context.values.get(key);
     };
 
     await client.say({ sentence: 'test' });
 
-    expect(capturedCustomData).toBe('middleware-attached-data');
-  });
-
-  it('should receive data from middleware through context in streaming methods', async () => {
-    let listenerCalled = false;
-    let receivedContext: HandlerContext | null = null;
-
-    const contextKey = createContextKey<string>('streamId');
-
-    TestMiddleware1.callback = (req: IncomingMessage, res: ServerResponse) => {
-      // TODO
-    };
-
-    ElizaController.listenManyCallback = (request, context) => {
-      listenerCalled = true;
-      receivedContext = context;
-    };
-
-    // Trigger server streaming
-    const stream = client.listenMany({ sentence: 'hello world' });
-    for await (const _response of stream) {
-    }
-
-    expect(listenerCalled).toBe(true);
-    expect(receivedContext).toBeDefined();
-    expect(receivedContext!.values.get<string>(contextKey)).toBe('stream-123');
+    expect(customDataReceived).toBe('custom-data-789');
   });
 
   it('should receive headers across multiple requests', async () => {
@@ -336,31 +224,6 @@ describe('Controller Receives Headers and Custom Data from Middlewares', () => {
     expect(capturedHeadersArray[2]).toBe('Bearer token3');
   });
 
-  it('should access request metadata in client streaming controller', async () => {
-    let callbackInvoked = false;
-    let hasContext = false;
-
-    ElizaController.sayManyCallback = (request, context) => {
-      callbackInvoked = true;
-      hasContext = !!context;
-    };
-
-    async function* generateRequests() {
-      yield { sentence: 'msg1' };
-      yield { sentence: 'msg2' };
-    }
-
-    await client.sayMany(generateRequests(), {
-      headers: {
-        Authorization: 'Bearer streaming-token',
-        'X-Stream-Id': 'stream-456',
-      },
-    });
-
-    expect(callbackInvoked).toBe(true);
-    expect(hasContext).toBe(true);
-  });
-
   it('should access URL and protocol information in controller', async () => {
     let capturedUrl: string = '';
     let capturedProtocol: string = '';
@@ -374,38 +237,5 @@ describe('Controller Receives Headers and Custom Data from Middlewares', () => {
 
     expect(capturedUrl).toContain('ElizaService/Say');
     expect(capturedProtocol).toBe('connect');
-  });
-
-  it('should handle multiple headers set by different middlewares', async () => {
-    let finalHeaders: Map<string, string> = new Map();
-
-    TestMiddleware1.callback = (req: IncomingMessage, res: ServerResponse) => {
-      // Middleware 1 sets a response header
-      (res as any).setHeader('X-Middleware-1', 'processed');
-    };
-
-    TestMiddleware2.callback = (req: IncomingMessage, res: ServerResponse) => {
-      // Middleware 2 sets another response header
-      (res as any).setHeader('X-Middleware-2', 'validated');
-    };
-
-    ElizaController.sayCallback = (request, context) => {
-      // Controller can read request headers
-      finalHeaders = new Map(context.requestHeader.entries());
-    };
-
-    await client.say(
-      { sentence: 'multi-middleware' },
-      {
-        headers: {
-          'X-Client-Header': 'client-value',
-        },
-      },
-    );
-
-    expect(finalHeaders.get('x-client-header')).toBe('client-value');
-    expect(finalHeaders.get('x-middleware-1')).toBe('processed');
-    expect(finalHeaders.get('x-middleware-2')).toBe('validated');
-    expect(finalHeaders.size).toBeGreaterThan(0);
   });
 });

@@ -6,11 +6,14 @@ export function printMsg() {
 
 export { ConnectRPC } from './connectrpc';
 
+export {
+  CustomContextValues,
+  createCustomContextValues,
+} from './context-values';
+
 export { middlewareConfig } from './interfaces';
 
 export type {
-  ExecutionContext,
-  Guard,
   Logger,
   Middleware,
   MiddlewareConfig,
@@ -18,6 +21,6 @@ export type {
   Service,
 } from './interfaces';
 
-export { initGuards } from './guards';
-
 export type { OmitConnectrpcFields } from './types';
+
+export { getCustomContextValues } from './middlewares';

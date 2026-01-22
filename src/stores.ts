@@ -1,5 +1,6 @@
 import { GenService, GenServiceMethods } from '@bufbuild/protobuf/codegenv2';
-import { Guard, Middleware, Service, Type } from './interfaces';
+import { CustomContextValues } from './context-values';
+import { Middleware, Service, Type } from './interfaces';
 
 class ControllersStoreClass {
   private controllers = new Map<
@@ -154,47 +155,44 @@ class RouteMetadataStoreClass {
 export const RouteMetadataStore = new RouteMetadataStoreClass();
 
 /**
- * Store for guard classes and their instances
+ * Middleware context - contains both raw req/res and context values
  */
-class GuardsStoreClass {
-  private guards = new Map<Type<Guard>, Guard>();
+export interface MiddlewareContext {
+  contextValues: CustomContextValues;
+}
+
+/**
+ * Store for middleware context - maps request IDs to middleware context
+ * This allows interceptors to access both raw request/response objects and context values
+ */
+class MiddlewareContextStoreClass {
+  private contexts = new Map<string, MiddlewareContext>();
 
   // For testing purposes
   clear() {
-    this.guards.clear();
+    this.contexts.clear();
   }
 
   /**
-   * Register a guard instance from its constructor
+   * Store middleware context by request ID
    */
-  registerInstance(
-    self: Guard,
-    {
-      allowMultipleInstances = false,
-    }: { allowMultipleInstances?: boolean } = {},
-  ) {
-    const guardClass = self.constructor as Type<Guard>;
-    if (!allowMultipleInstances && this.guards.has(guardClass)) {
-      throw new Error(
-        `Guard ${guardClass.name} is already registered! This may happen if you export guard as provider and also register it in some Nest module.`,
-      );
-    }
-    this.guards.set(guardClass, self);
+  set(requestId: string, context: MiddlewareContext) {
+    this.contexts.set(requestId, context);
   }
 
   /**
-   * Get a guard instance by its class
+   * Get middleware context by request ID
    */
-  getInstance(guardClass: Type<Guard>): Guard | null {
-    return this.guards.get(guardClass) || null;
+  get(requestId: string): MiddlewareContext | null {
+    return this.contexts.get(requestId) || null;
   }
 
   /**
-   * Get all registered guards
+   * Delete middleware context by request ID
    */
-  getAllGuards(): Guard[] {
-    return Array.from(this.guards.values());
+  delete(requestId: string) {
+    this.contexts.delete(requestId);
   }
 }
 
-export const GuardsStore = new GuardsStoreClass();
+export const MiddlewareContextStore = new MiddlewareContextStoreClass();

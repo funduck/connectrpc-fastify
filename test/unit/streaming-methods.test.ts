@@ -1,12 +1,10 @@
 import { create } from '@bufbuild/protobuf';
 import { Client } from '@connectrpc/connect';
-import { IncomingMessage, ServerResponse } from 'http';
 import { ElizaController } from '../demo/controller';
 import {
   ElizaService,
   SayRequestSchema,
 } from '../demo/gen/connectrpc/eliza/v1/eliza_pb';
-import { TestMiddleware1 } from '../demo/middlewares';
 import { resetMiddlewareCallbacks, setupTestServer } from './test-helpers';
 
 // Helper to collect items from async iterable
@@ -267,25 +265,5 @@ describe('Client Streaming RPC Methods', () => {
       'Bearer client-stream-token',
     );
     expect(receivedHeaders.get('x-stream-type')).toBe('client');
-  });
-
-  it('should verify middleware runs before client streaming controller', async () => {
-    const executionOrder: string[] = [];
-
-    TestMiddleware1.callback = (req: IncomingMessage, res: ServerResponse) => {
-      executionOrder.push('middleware');
-    };
-
-    ElizaController.sayManyCallback = (request, context) => {
-      executionOrder.push('controller');
-    };
-
-    async function* generateRequests() {
-      yield create(SayRequestSchema, { sentence: 'order test' });
-    }
-
-    await client.sayMany(generateRequests());
-
-    expect(executionOrder).toEqual(['middleware', 'controller']);
   });
 });

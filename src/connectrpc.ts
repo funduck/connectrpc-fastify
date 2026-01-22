@@ -1,17 +1,15 @@
 import { GenService, GenServiceMethods } from '@bufbuild/protobuf/codegenv2';
 import { FastifyInstance } from 'fastify';
 import { registerFastifyPlugin } from './fastify-plugin';
-import { initGuards } from './guards';
 import { setLogger } from './helpers';
 import {
-  Guard,
   Logger,
   Middleware,
   MiddlewareConfigUnion,
   Service,
 } from './interfaces';
 import { initMiddlewares } from './middlewares';
-import { ControllersStore, GuardsStore, MiddlewareStore } from './stores';
+import { ControllersStore, MiddlewareStore } from './stores';
 
 class ConnectRPCClass {
   setLogger(customLogger: Logger) {
@@ -41,15 +39,6 @@ class ConnectRPCClass {
     ControllersStore.registerInstance(self, service, options);
   }
 
-  registerGuard(
-    self: Guard,
-    options?: {
-      allowMultipleInstances?: boolean;
-    },
-  ) {
-    GuardsStore.registerInstance(self, options);
-  }
-
   registerFastifyPlugin(server: FastifyInstance) {
     return registerFastifyPlugin(server);
   }
@@ -63,21 +52,8 @@ class ConnectRPCClass {
     if (this._middlewaresInitialized) {
       throw new Error('Middlewares have already been initialized!');
     }
-    if (this._guardsInitialized) {
-      throw new Error('Middlewares must be initialized before guards!');
-    }
     this._middlewaresInitialized = true;
     return initMiddlewares(server, middlewareConfigs);
-  }
-
-  private _guardsInitialized = false;
-
-  initGuards(server: FastifyInstance) {
-    if (this._guardsInitialized) {
-      throw new Error('Guards have already been initialized!');
-    }
-    this._guardsInitialized = true;
-    return initGuards(server);
   }
 }
 

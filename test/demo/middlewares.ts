@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ConnectRPC, Middleware } from '../../src/index';
-import { ContextStorage } from './async_hooks';
 
 export class TestMiddleware1 implements Middleware {
   static callback = (req: FastifyRequest['raw'], res: FastifyReply['raw']) =>
@@ -14,24 +13,8 @@ export class TestMiddleware1 implements Middleware {
   }
 
   use(req: FastifyRequest['raw'], res: FastifyReply['raw'], next: () => void) {
-    ContextStorage.runAsync(new Map<string, any>(), async () => {
-      console.log('TestMiddleware1: context store initialized');
-      return new Promise<void>((resolve) => {
-        try {
-          res.once('finish', () => {
-            resolve();
-          });
-
-          TestMiddleware1.callback(req, res);
-
-          next();
-        } catch (error) {
-          resolve();
-        }
-      });
-    }).finally(() => {
-      console.log('TestMiddleware1: context store cleared');
-    });
+    TestMiddleware1.callback(req, res);
+    next();
   }
 }
 

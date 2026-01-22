@@ -35,6 +35,9 @@ type ExtractOutput<T> = T extends { output: GenMessage<infer M> } ? M : never;
 
 /**
  * Convert a service method to a controller method signature
+ *
+ * Note: The context parameter receives a HandlerContext instance at runtime
+ * which provides access to headers, values, signal, and other request metadata.
  */
 type ServiceMethod<T> = T extends { methodKind: 'unary' }
   ? (
@@ -151,30 +154,4 @@ export function middlewareConfig<T extends GenService<any>>(
     on,
     methods,
   };
-}
-
-export interface ExecutionContext {
-  getClass<T = any>(): Type<T>;
-
-  getHandler(): Function;
-
-  getArgs<T extends Array<any> = any[]>(): T;
-
-  getArgByIndex<T = any>(index: number): T;
-
-  switchToHttp(): {
-    getRequest(): FastifyRequest['raw'];
-    getResponse(): FastifyReply['raw'];
-    getNext<T = any>(): () => T;
-  };
-
-  // Adding these two only for compatibility with NestJS ExecutionContext
-  // Implementations will throw error
-  switchToRpc(): any;
-
-  switchToWs(): any;
-}
-
-export interface Guard {
-  canActivate(context: ExecutionContext): boolean | Promise<boolean>;
 }
