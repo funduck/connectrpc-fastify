@@ -84,14 +84,15 @@ class ConnectRPCClass {
     InterceptorStore.clear();
   }
 
-  private initInterceptors(configs: InterceptorConfigUnion[]) {
+  initInterceptors(configs: InterceptorConfigUnion[]) {
     initInterceptors(configs);
   }
-  private registerFastifyPlugin(server: FastifyInstance) {
+
+  registerFastifyPlugin(server: FastifyInstance) {
     return registerFastifyPlugin(server);
   }
 
-  private initMiddlewares(
+  initMiddlewares(
     server: FastifyInstance,
     middlewareConfigs: MiddlewareConfigUnion[],
   ) {
