@@ -1,4 +1,6 @@
 # Connectrpc Fastify Wrapper
+<img src="./coverage/badge.svg" alt="Coverage Badge" />
+
 !BETA
 
 Code is not production ready.

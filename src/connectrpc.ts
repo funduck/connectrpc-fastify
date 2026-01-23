@@ -25,34 +25,21 @@ class ConnectRPCClass {
   }
 
   /** Should be called in middleware constructor */
-  registerMiddleware(
-    self: Middleware,
-    options?: {
-      allowMultipleInstances?: boolean;
-    },
-  ) {
-    MiddlewareStore.registerInstance(self, options);
+  registerMiddleware(self: Middleware) {
+    MiddlewareStore.registerInstance(self);
   }
 
   /** Should be called in interceptor constructor */
-  registerInterceptor(
-    self: Interceptor,
-    options?: {
-      allowMultipleInstances?: boolean;
-    },
-  ) {
-    InterceptorStore.registerInstance(self, options);
+  registerInterceptor(self: Interceptor) {
+    InterceptorStore.registerInstance(self);
   }
 
   /** Should be called in controller constructor */
   registerController<T extends GenServiceMethods>(
     self: Service<GenService<T>>,
     service: GenService<T>,
-    options?: {
-      allowMultipleInstances?: boolean;
-    },
   ) {
-    ControllersStore.registerInstance(self, service, options);
+    ControllersStore.registerInstance(self, service);
   }
 
   /** Initialize ConnectRPC with interceptors, Fastify plugin, and middlewares */

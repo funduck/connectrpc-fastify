@@ -59,8 +59,6 @@ export async function initMiddlewares(
     });
   });
 
-  logger.log('Applied context middleware for storing ContextValues');
-
   // Check all registered middlewares
   for (const config of middlewareConfigs) {
     const middlewareInstance = MiddlewareStore.getInstance(config.use);
@@ -79,7 +77,7 @@ export async function initMiddlewares(
       ? ` methods [${config.methods.join(', ')}]`
       : ' all methods';
     logger.log(
-      `Applied middleware: ${config.use.name}${serviceInfo}${methodInfo}`,
+      `Registered middleware: ${config.use.name}${serviceInfo}${methodInfo}`,
     );
   }
 

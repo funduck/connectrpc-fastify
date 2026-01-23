@@ -27,14 +27,9 @@ class ControllersStoreClass {
   registerInstance<T extends GenServiceMethods>(
     self: Service<GenService<T>>,
     service: GenService<T>,
-    {
-      allowMultipleInstances = false,
-    }: {
-      allowMultipleInstances?: boolean;
-    } = {},
   ) {
     const controllerClass = self.constructor as Type<any>;
-    if (!allowMultipleInstances && this.controllers.has(controllerClass)) {
+    if (this.controllers.has(controllerClass)) {
       throw new Error(
         `Controller ${controllerClass.name} is already registered! This may happen if you export controller as provider and also register it in some Nest module.`,
       );
@@ -62,16 +57,9 @@ class MiddlewareStoreClass {
   /**
    * Register a middleware instance from its constructor
    */
-  registerInstance(
-    self: Middleware,
-    {
-      allowMultipleInstances = false,
-    }: {
-      allowMultipleInstances?: boolean;
-    } = {},
-  ) {
+  registerInstance(self: Middleware) {
     const middlewareClass = self.constructor as Type<Middleware>;
-    if (!allowMultipleInstances && this.middlewares.has(middlewareClass)) {
+    if (this.middlewares.has(middlewareClass)) {
       throw new Error(
         `Middleware ${middlewareClass.name} is already registered! This may happen if you export middleware as provider and also register it in some Nest module.`,
       );
@@ -209,17 +197,10 @@ class InterceptorStoreClass {
   /**
    * Register an interceptor instance by a unique key
    */
-  registerInstance(
-    self: Interceptor,
-    {
-      allowMultipleInstances = false,
-    }: {
-      allowMultipleInstances?: boolean;
-    } = {},
-  ) {
+  registerInstance(self: Interceptor) {
     const interceptorClass = self.constructor as Type<Interceptor>;
     const key = interceptorClass.name;
-    if (!allowMultipleInstances && this.interceptors.has(key)) {
+    if (this.interceptors.has(key)) {
       throw new Error(
         `Interceptor ${interceptorClass.name} is already registered! This may happen if you export interceptor as provider and also register it in some Nest module.`,
       );

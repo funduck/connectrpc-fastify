@@ -1,6 +1,6 @@
 {
   "name": "@funduck/connectrpc-fastify",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "author": "Oleg Milekhin <qlfunduck@gmail.com>",
   "description": "Wrapper for official @connectrpc/connect and fastify. Simplifies configuration, type safe binding to controller, simplifies use of middlewares and guards.",
   "main": "dist/index.js",
@@ -10,9 +10,9 @@
     "compile-proto": "cd test/demo && npx buf dep update; npx buf lint; npx buf generate",
     "test:demo": "npm run compile-proto && cd test/demo && DEBUG=true npx tsx e2e-demo.ts",
     "test": "npm run compile-proto && jest --verbose",
-    "test:coverage": "npm run compile-proto && jest --coverage --runInBand",
-    "publish:check": "npm test && npm run build && npm publish --tag latest --access public --dry-run",
-    "publish:latest": "npm test && npm run build && npm publish --tag latest --access public"
+    "test:coverage": "npm run compile-proto && jest --coverage --coverageReporters=json-summary --runInBand ; npx make-coverage-badge",
+    "publish:check": "npm run test && npm run test:demo && npm run build && npm publish --tag latest --access public --dry-run",
+    "publish:latest": "npm run test:coverage && npm run test:demo && npm run build && npm publish --tag latest --access public"
   },
   "license": "MIT",
   "peerDependencies": {
