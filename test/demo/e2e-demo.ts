@@ -5,6 +5,7 @@ import {
   ElizaService,
   SayRequestSchema,
 } from './gen/connectrpc/eliza/v1/eliza_pb';
+import { TestInterceptor1 } from './interceptors';
 import {
   TestMiddleware1,
   TestMiddleware2,
@@ -50,6 +51,17 @@ function prepareMiddlewares() {
   };
 }
 
+let testInterceptorCalled = {
+  1: false,
+};
+function prepareInterceptors() {
+  testInterceptorCalled[1] = false;
+  TestInterceptor1.callback = (req) => {
+    console.log(`Interceptor 1 called for request`);
+    testInterceptorCalled[1] = true;
+  };
+}
+
 async function testUnary() {
   console.log('\n=== Testing Unary RPC: Say ===');
   const sentence = 'Hello ConnectRPC!';
@@ -57,6 +69,7 @@ async function testUnary() {
 
   try {
     prepareMiddlewares();
+    prepareInterceptors();
 
     const response = await client.say(
       { sentence },
@@ -97,6 +110,7 @@ async function testClientStreaming() {
 
   try {
     prepareMiddlewares();
+    prepareInterceptors();
 
     // Create an async generator to send multiple requests
     async function* generateRequests() {
@@ -149,6 +163,7 @@ async function testServerStreaming() {
 
   try {
     prepareMiddlewares();
+    prepareInterceptors();
 
     let count = 0;
     for await (const response of client.listenMany(

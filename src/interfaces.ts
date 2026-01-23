@@ -1,5 +1,11 @@
 import type { GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
-import { HandlerContext } from '@connectrpc/connect';
+import {
+  HandlerContext,
+  StreamRequest,
+  StreamResponse,
+  UnaryRequest,
+  UnaryResponse,
+} from '@connectrpc/connect';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { OmitConnectrpcFields } from './types';
 
@@ -17,6 +23,21 @@ export interface Middleware {
     res: FastifyReply['raw'],
     next: (err?: any) => void,
   ): void;
+}
+
+/**
+ * Copy-paste from @connectrpc/connect Interceptor types
+ *
+ * AnyFn represents the client-side invocation of an RPC. Interceptors can wrap
+ * this invocation, add request headers, and wrap parts of the request or
+ * response to inspect and log.
+ */
+export type AnyFn = (
+  req: UnaryRequest | StreamRequest,
+) => Promise<UnaryResponse | StreamResponse>;
+
+export interface Interceptor {
+  use(next: AnyFn): AnyFn;
 }
 
 export interface Type<T = any> extends Function {
@@ -95,15 +116,7 @@ export type ServiceMethodNames<T> =
       }[keyof Methods]
     : never;
 
-/**
- * Middleware configuration for ConnectRPC routes - without service specified
- */
-export type MiddlewareConfigGlobal = {
-  /**
-   * The middleware class to apply (must be decorated with @Middleware())
-   */
-  use: Type<Middleware>;
-
+export type RouteConfigGlobal = {
   /**
    * Middleware applies to all services and all methods
    */
@@ -111,15 +124,7 @@ export type MiddlewareConfigGlobal = {
   methods?: never;
 };
 
-/**
- * Middleware configuration for ConnectRPC routes - with service specified
- */
-export type MiddlewareConfig<T extends GenService<any>> = {
-  /**
-   * The middleware class to apply (must be decorated with @Middleware())
-   */
-  use: Type<Middleware>;
-
+export type RouteConfigService<T extends GenService<any>> = {
   /**
    * The service to apply middleware to
    */
@@ -132,6 +137,26 @@ export type MiddlewareConfig<T extends GenService<any>> = {
    */
   methods?: Array<ServiceMethodNames<T>>;
 };
+
+/**
+ * Middleware configuration for ConnectRPC routes - without service specified
+ */
+export type MiddlewareConfigGlobal = {
+  /**
+   * The middleware class to apply (must be decorated with @Middleware())
+   */
+  use: Type<Middleware>;
+} & RouteConfigGlobal;
+
+/**
+ * Middleware configuration for ConnectRPC routes - with service specified
+ */
+export type MiddlewareConfig<T extends GenService<any>> = {
+  /**
+   * The middleware class to apply (must be decorated with @Middleware())
+   */
+  use: Type<Middleware>;
+} & RouteConfigService<T>;
 
 /**
  * Middleware configuration for ConnectRPC routes
@@ -149,6 +174,43 @@ export function middlewareConfig<T extends GenService<any>>(
   on?: T,
   methods?: Array<ServiceMethodNames<T>>,
 ): MiddlewareConfigUnion {
+  return {
+    use,
+    on,
+    methods,
+  };
+}
+
+export type InterceptorConfigGlobal = {
+  /**
+   * The interceptor class to apply (must be decorated with @Interceptor())
+   */
+  use: Type<Interceptor>;
+} & RouteConfigGlobal;
+
+export type InterceptorConfig<T extends GenService<any>> = {
+  /**
+   * The interceptor class to apply (must be decorated with @Interceptor())
+   */
+  use: Type<Interceptor>;
+} & RouteConfigService<T>;
+
+/**
+ * Interceptor configuration for ConnectRPC routes
+ */
+export type InterceptorConfigUnion =
+  | InterceptorConfigGlobal
+  | InterceptorConfig<any>;
+
+/**
+ * Helper function to create a type-safe interceptor configuration
+ * This ensures proper type inference for method names based on the service
+ */
+export function interceptorConfig<T extends GenService<any>>(
+  use: Type<Interceptor>,
+  on?: T,
+  methods?: Array<ServiceMethodNames<T>>,
+): InterceptorConfigUnion {
   return {
     use,
     on,

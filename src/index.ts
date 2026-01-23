@@ -8,12 +8,16 @@ export { ConnectRPC } from './connectrpc';
 
 export {
   CustomContextValues,
+  controllerClassContextKey,
+  controllerMethodContextKey,
   createCustomContextValues,
 } from './context-values';
 
-export { middlewareConfig } from './interfaces';
+export { interceptorConfig, middlewareConfig } from './interfaces';
 
 export type {
+  AnyFn,
+  Interceptor,
   Logger,
   Middleware,
   MiddlewareConfig,

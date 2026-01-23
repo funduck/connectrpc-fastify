@@ -1,5 +1,6 @@
 import type { HandlerContext } from '@connectrpc/connect';
 import { ConnectRPC, OmitConnectrpcFields, Service } from '../../src/index';
+import { ClassMetadata, MethodMetadata } from './decorators';
 import type {
   SayRequest,
   SayResponse,
@@ -7,6 +8,7 @@ import type {
 } from './gen/connectrpc/eliza/v1/eliza_pb';
 import { ElizaService } from './gen/connectrpc/eliza/v1/eliza_pb';
 
+@ClassMetadata({ service: 'ElizaService', version: 'v1', author: 'demo-team' })
 export class ElizaController implements Service<typeof ElizaService> {
   static sayCallback: (
     request: SayRequest,
@@ -29,6 +31,7 @@ export class ElizaController implements Service<typeof ElizaService> {
    * Unary RPC: Say
    * Client sends one request, server sends one response
    */
+  @MethodMetadata({ type: 'unary', rateLimit: 100, cacheable: true })
   async say(
     request: SayRequest,
     context: HandlerContext,
@@ -46,6 +49,7 @@ export class ElizaController implements Service<typeof ElizaService> {
    * Client Streaming RPC: SayMany
    * Client sends multiple requests, server sends one response with all collected
    */
+  @MethodMetadata({ type: 'client-streaming', maxMessages: 1000 })
   async sayMany(
     request: AsyncIterable<SayRequest>,
     context: HandlerContext,
@@ -70,6 +74,7 @@ export class ElizaController implements Service<typeof ElizaService> {
    * Server Streaming RPC: ListenMany
    * Client sends one request, server sends multiple responses
    */
+  @MethodMetadata({ type: 'server-streaming', priority: 'high' })
   async *listenMany(request: SayRequest, context: HandlerContext) {
     ElizaController.listenManyCallback?.(request, context);
 

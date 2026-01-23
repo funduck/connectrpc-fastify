@@ -1,7 +1,9 @@
 import Fastify from 'fastify';
 import { ConnectRPC, middlewareConfig } from '../../src/index';
+import { interceptorConfig } from '../../src/interfaces';
 import { ElizaController } from './controller';
 import { ElizaService } from './gen/connectrpc/eliza/v1/eliza_pb';
+import { MetadataReaderInterceptor, TestInterceptor1 } from './interceptors';
 import {
   TestMiddleware1,
   TestMiddleware2,
@@ -24,13 +26,20 @@ export async function bootstrap() {
   new TestMiddleware2();
   new TestMiddleware3();
 
-  await ConnectRPC.registerFastifyPlugin(fastify);
+  new TestInterceptor1();
+  new MetadataReaderInterceptor();
 
-  ConnectRPC.initMiddlewares(fastify, [
-    middlewareConfig(TestMiddleware1), // Global middleware for all services and methods
-    middlewareConfig(TestMiddleware2, ElizaService), // Middleware for all ElizaService methods
-    middlewareConfig(TestMiddleware3, ElizaService, ['say']), // Middleware for ElizaService's say method only
-  ]);
+  await ConnectRPC.init(fastify, {
+    interceptors: [
+      interceptorConfig(MetadataReaderInterceptor, ElizaService), // Metadata reader interceptor
+      interceptorConfig(TestInterceptor1, ElizaService), // Interceptor for all ElizaService methods
+    ],
+    middlewares: [
+      middlewareConfig(TestMiddleware1), // Global middleware for all services and methods
+      middlewareConfig(TestMiddleware2, ElizaService), // Middleware for all ElizaService methods
+      middlewareConfig(TestMiddleware3, ElizaService, ['say']), // Middleware for ElizaService's say method only
+    ],
+  });
 
   // Run the server!
   try {

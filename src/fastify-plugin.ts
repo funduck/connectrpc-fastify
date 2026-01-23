@@ -3,8 +3,8 @@ import { ConnectRouter } from '@connectrpc/connect';
 import { fastifyConnectPlugin } from '@connectrpc/connect-fastify';
 import { Compression } from '@connectrpc/connect/protocol';
 import { FastifyInstance } from 'fastify';
-import { discoverMethodMappings, logger } from './helpers';
-import { contextInterceptor } from './interceptors';
+import { logger } from './helpers';
+import { contextInterceptor, initializedInterceptors } from './interceptors';
 import { ControllersStore, RouteMetadataStore } from './stores';
 
 export async function registerFastifyPlugin(
@@ -17,18 +17,14 @@ export async function registerFastifyPlugin(
   const implementations = new Map<GenService<any>, any>();
 
   for (const { instance, service } of ControllersStore.values()) {
-    const methodMappings = discoverMethodMappings(instance.__proto__, service);
-
     // Create the implementation object
     const implementation: any = {};
 
     // Bind each method from the service
     for (const methodDesc of service.methods) {
-      const { name } = methodDesc;
-      const methodName = name[0].toLowerCase() + name.slice(1);
-
-      // Check if there's a mapped controller method
-      const controllerMethodName = methodMappings[name];
+      const { name: methodName } = methodDesc; // This is in PascalCase, e.g., "Say" as in service .proto file
+      const controllerMethodName =
+        methodName[0].toLowerCase() + methodName.slice(1); // This is in camelCase, e.g., "say" as in controller
 
       if (controllerMethodName) {
         const controllerMethod = instance[controllerMethodName];
@@ -36,12 +32,12 @@ export async function registerFastifyPlugin(
         if (controllerMethod) {
           // Bind the method with proper 'this' context
           const bindedMethod = controllerMethod.bind(instance);
-          implementation[methodName] = bindedMethod;
+          implementation[controllerMethodName] = bindedMethod;
 
-          // Store route metadata for guards and interceptors
+          // Store route metadata for interceptors
           RouteMetadataStore.registerRoute(
             service.typeName,
-            name, // PascalCase method name (e.g., "Say")
+            methodName,
             instance.constructor,
             controllerMethod,
             controllerMethodName,
@@ -49,7 +45,7 @@ export async function registerFastifyPlugin(
           );
 
           logger.log(
-            `Binding ${instance.constructor.name}.${controllerMethodName} to ${service.typeName}.${name}`,
+            `Binding ${instance.constructor.name}.${controllerMethodName} to ${service.typeName}.${methodName}`,
           );
         } else {
           logger.warn(
@@ -83,7 +79,7 @@ export async function registerFastifyPlugin(
     grpcWeb: false,
     connect: true,
     acceptCompression: options.acceptCompression ?? [],
-    interceptors: [contextInterceptor],
+    interceptors: [contextInterceptor, ...initializedInterceptors],
     routes: routes,
   });
 

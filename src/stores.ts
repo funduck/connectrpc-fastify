@@ -1,6 +1,7 @@
 import { GenService, GenServiceMethods } from '@bufbuild/protobuf/codegenv2';
 import { CustomContextValues } from './context-values';
-import { Middleware, Service, Type } from './interfaces';
+import { getURLPath } from './helpers';
+import { Interceptor, Middleware, Service, Type } from './interfaces';
 
 class ControllersStoreClass {
   private controllers = new Map<
@@ -141,7 +142,7 @@ class RouteMetadataStoreClass {
    * Get route metadata by URL path
    */
   getRouteMetadata(urlPath: string) {
-    return this.routes.get(urlPath) || null;
+    return this.routes.get(getURLPath(urlPath)) || null;
   }
 
   /**
@@ -196,3 +197,43 @@ class MiddlewareContextStoreClass {
 }
 
 export const MiddlewareContextStore = new MiddlewareContextStoreClass();
+
+class InterceptorStoreClass {
+  private interceptors = new Map<string, any>();
+
+  // For testing purposes
+  clear() {
+    this.interceptors.clear();
+  }
+
+  /**
+   * Register an interceptor instance by a unique key
+   */
+  registerInstance(
+    self: Interceptor,
+    {
+      allowMultipleInstances = false,
+    }: {
+      allowMultipleInstances?: boolean;
+    } = {},
+  ) {
+    const interceptorClass = self.constructor as Type<Interceptor>;
+    const key = interceptorClass.name;
+    if (!allowMultipleInstances && this.interceptors.has(key)) {
+      throw new Error(
+        `Interceptor ${interceptorClass.name} is already registered! This may happen if you export interceptor as provider and also register it in some Nest module.`,
+      );
+    }
+    this.interceptors.set(key, self);
+  }
+
+  /**
+   * Get an interceptor instance by its unique key
+   */
+  getInstance(interceptorClass: Type<Interceptor>): Interceptor | null {
+    const key = interceptorClass.name;
+    return this.interceptors.get(key) || null;
+  }
+}
+
+export const InterceptorStore = new InterceptorStoreClass();

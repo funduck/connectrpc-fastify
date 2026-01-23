@@ -1,6 +1,6 @@
 {
   "name": "@funduck/connectrpc-fastify",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "author": "Oleg Milekhin <qlfunduck@gmail.com>",
   "description": "Wrapper for official @connectrpc/connect and fastify. Simplifies configuration, type safe binding to controller, simplifies use of middlewares and guards.",
   "main": "dist/index.js",
@@ -32,6 +32,7 @@
     "prettier-plugin-organize-imports": "^4.3.0",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "reflect-metadata": "^0.2.2"
   }
 }

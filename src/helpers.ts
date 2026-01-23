@@ -1,48 +1,29 @@
-import { GenService } from '@bufbuild/protobuf/codegenv2';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { Logger } from './interfaces';
+import {
+  Logger,
+  Middleware,
+  RouteConfigGlobal,
+  RouteConfigService,
+} from './interfaces';
 
-/**
- * Automatically discover method mappings by matching service methods to controller methods
- */
-export function discoverMethodMappings(
-  prototype,
-  service: GenService<any>,
-): Record<string, string> {
-  const methodMappings: Record<string, string> = {};
-
-  // service.methods is an array of method descriptors
-  const serviceMethods = Array.isArray(service.methods) ? service.methods : [];
-
-  // Get all controller methods
-  const controllerMethods = Object.getOwnPropertyNames(prototype).filter(
-    (name) => name !== 'constructor' && typeof prototype[name] === 'function',
-  );
-
-  // Check each service method
-  for (const methodDesc of serviceMethods) {
-    const serviceMethodName = methodDesc.name; // e.g., "Say" - this is what connectrpc module uses as key
-    const localName = methodDesc.localName; // e.g., "say" (camelCase version)
-
-    // Try to find a matching controller method
-    // First try exact match with localName (camelCase), then try case-insensitive
-    let controllerMethodName = controllerMethods.find(
-      (name) => name === localName,
-    );
-
-    if (!controllerMethodName) {
-      controllerMethodName = controllerMethods.find(
-        (name) => name.toLowerCase() === serviceMethodName.toLowerCase(),
-      );
+export function callMiddlewareAsync(
+  middleware: Middleware,
+  req: FastifyRequest,
+  res: FastifyReply,
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    try {
+      middleware.use(req.raw, res.raw, (err?: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    } catch (error) {
+      reject(error);
     }
-
-    if (controllerMethodName) {
-      // Map using the service method name (e.g., "Say") because that's what the module looks for
-      methodMappings[serviceMethodName] = controllerMethodName;
-    }
-  }
-
-  return methodMappings;
+  });
 }
 
 /**
@@ -52,42 +33,40 @@ export function convertMiddlewareToHook(
   middlewareInstance: any,
 ): (request: FastifyRequest, reply: FastifyReply) => Promise<void> {
   return async (request: FastifyRequest, reply: FastifyReply) => {
-    return new Promise<void>((resolve, reject) => {
-      try {
-        // NestJS middleware expects raw req/res
-        middlewareInstance.use(request.raw, reply.raw, (err?: any) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      } catch (error) {
-        reject(error);
-      }
-    });
+    await callMiddlewareAsync(middlewareInstance, request, reply);
   };
 }
 
 export let logger: Logger = {
   log: (...args: any[]) => {
-    // console.info(...args);
+    console.info(...args);
   },
   error: (...args: any[]) => {
-    // console.error(...args);
+    console.error(...args);
   },
   warn: (...args: any[]) => {
-    // console.warn(...args);
+    console.warn(...args);
   },
   debug: (...args: any[]) => {
-    // console.debug(...args);
+    console.debug(...args);
   },
   verbose: (...args: any[]) => {
-    // console.log(...args);
+    console.log(...args);
   },
 };
 
-export function setLogger(customLogger: Logger) {
+export function setLogger(customLogger: Logger | false) {
+  if (customLogger === false) {
+    // Disable logging
+    logger = {
+      log: () => {},
+      error: () => {},
+      warn: () => {},
+      debug: () => {},
+      verbose: () => {},
+    };
+    return;
+  }
   logger = customLogger;
 }
 
@@ -96,4 +75,59 @@ export function setLogger(customLogger: Logger) {
  */
 export function generateRequestId(): string {
   return `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+}
+
+/** Returns checker function for url */
+export function buildRouteConfigChecker<
+  T extends RouteConfigGlobal | RouteConfigService<any>,
+>(configs: T[]) {
+  const configMethods = configs.map((config) => ({
+    config: config,
+    methods: new Set(
+      // Convert method names to set with PascalCase
+      (config.methods || []).map((m) => m[0].toUpperCase() + m.slice(1)),
+    ),
+  }));
+
+  /** Returns matched route configs for a given URL */
+  return (url: string, checkConfig?: T) => {
+    // Parse the URL to get service and method
+    // Format: /package.ServiceName/MethodName
+    const match = url.match(/^\/([^/]+)\/([^/]+)$/);
+
+    if (!match) {
+      // Not a ConnectRPC route, skip
+      return [];
+    }
+
+    const [, serviceName, methodName] = match;
+
+    const matchedConfigs: T[] = [];
+
+    for (const { config, methods } of configMethods) {
+      // If checkConfig is provided, only match that specific config
+      if (checkConfig && config !== checkConfig) {
+        continue;
+      }
+
+      // Check if config should apply to this service
+      if (config.on && config.on.typeName !== serviceName) {
+        continue;
+      }
+
+      // Check if config should apply to this method
+      if (methods.size && !methods.has(methodName)) {
+        continue;
+      }
+
+      matchedConfigs.push(config);
+    }
+
+    return matchedConfigs;
+  };
+}
+
+/** Returns the pathname part of a URL which should be used to parse service name and method name */
+export function getURLPath(url: string): string {
+  return URL.parse(url)?.pathname || url;
 }

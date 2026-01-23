@@ -1,4 +1,9 @@
-import { ContextKey, ContextValues } from '@connectrpc/connect';
+import {
+  ContextKey,
+  ContextValues,
+  createContextKey,
+} from '@connectrpc/connect';
+import { Type } from './interfaces';
 
 /**
  * Custom ContextValues implementation that extends the standard ConnectRPC ContextValues
@@ -50,3 +55,10 @@ export class CustomContextValues implements ContextValues {
 export function createCustomContextValues(): CustomContextValues {
   return new CustomContextValues();
 }
+
+export const controllerClassContextKey = createContextKey<Type<any> | null>(
+  null,
+);
+export const controllerMethodContextKey = createContextKey<Function | null>(
+  null,
+);
