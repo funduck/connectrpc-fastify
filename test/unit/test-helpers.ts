@@ -43,14 +43,14 @@ export async function setupTestServer(port: number = 0): Promise<{
   ConnectRPC.setLogger(false);
 
   // Register ConnectRPC plugin
-  await ConnectRPC.registerFastifyPlugin(fastify);
-
-  // Initialize middlewares
-  ConnectRPC.initMiddlewares(fastify, [
-    middlewareConfig(TestMiddleware1), // Global middleware
-    middlewareConfig(TestMiddleware2, ElizaService), // ElizaService middleware
-    middlewareConfig(TestMiddleware3, ElizaService, ['say']), // Only for 'say' method
-  ]);
+  await ConnectRPC.init(fastify, {
+    logger: false,
+    middlewares: [
+      middlewareConfig(TestMiddleware1), // Global middleware
+      middlewareConfig(TestMiddleware2, ElizaService), // ElizaService middleware
+      middlewareConfig(TestMiddleware3, ElizaService, ['say']), // Only for 'say' method
+    ],
+  });
 
   // Start the server
   const address = await fastify.listen({ port, host: '127.0.0.1' });
@@ -66,11 +66,7 @@ export async function setupTestServer(port: number = 0): Promise<{
 
   const cleanup = async () => {
     await fastify.close();
-    ControllersStore.clear();
-    RouteMetadataStore.clear();
-    MiddlewareStore.clear();
-    InterceptorStore.clear();
-    ConnectRPC['_middlewaresInitialized'] = false;
+    ConnectRPC.clear();
   };
 
   return {

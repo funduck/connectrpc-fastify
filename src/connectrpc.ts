@@ -12,10 +12,15 @@ import {
   Service,
 } from './interfaces';
 import { initMiddlewares } from './middlewares';
-import { ControllersStore, InterceptorStore, MiddlewareStore } from './stores';
+import {
+  ControllersStore,
+  InterceptorStore,
+  MiddlewareStore,
+  RouteMetadataStore,
+} from './stores';
 
 class ConnectRPCClass {
-  setLogger(customLogger: Logger | false) {
+  setLogger(customLogger: Logger | boolean) {
     setLogger(customLogger);
   }
 
@@ -50,55 +55,47 @@ class ConnectRPCClass {
     ControllersStore.registerInstance(self, service, options);
   }
 
-  /**
-   * Configure interceptors for ConnectRPC routes.
-   * The order of interceptors matters - they will be applied in the order they are provided.
-   *
-   * For type safety use `interceptorConfig` helper from './interfaces'.
-   *
-   * Should be called before `registerFastifyPlugin`.
-   */
-  initInterceptors(configs: InterceptorConfigUnion[]) {
-    initInterceptors(configs);
-  }
-
-  registerFastifyPlugin(server: FastifyInstance) {
-    return registerFastifyPlugin(server);
-  }
-
-  /**
-   * Configure and initialize middlewares for ConnectRPC routes.
-   * The order of middlewares matters - they will be applied in the order they are provided.
-   *
-   * For type safety use `middlewareConfig` helper from './interfaces'.
-   *
-   * Should be called after `registerFastifyPlugin`.
-   */
-  initMiddlewares(
-    server: FastifyInstance,
-    middlewareConfigs: MiddlewareConfigUnion[],
-  ) {
-    return initMiddlewares(server, middlewareConfigs);
-  }
-
+  /** Initialize ConnectRPC with interceptors, Fastify plugin, and middlewares */
   async init(
     server: FastifyInstance,
-    options: {
+    options?: {
       logger?: Logger | false;
       interceptors?: InterceptorConfigUnion[];
       middlewares?: MiddlewareConfigUnion[];
     },
   ) {
-    if (options.logger != null) {
+    if (options?.logger != null) {
       this.setLogger(options.logger);
     }
-    if (options.interceptors) {
+    if (options?.interceptors) {
       this.initInterceptors(options.interceptors);
     }
     await this.registerFastifyPlugin(server);
-    if (options.middlewares) {
+    if (options?.middlewares) {
       this.initMiddlewares(server, options.middlewares);
     }
+  }
+
+  /** Clear all registered controllers, routes, middlewares, and interceptors. Useful for testing */
+  clear() {
+    ControllersStore.clear();
+    RouteMetadataStore.clear();
+    MiddlewareStore.clear();
+    InterceptorStore.clear();
+  }
+
+  private initInterceptors(configs: InterceptorConfigUnion[]) {
+    initInterceptors(configs);
+  }
+  private registerFastifyPlugin(server: FastifyInstance) {
+    return registerFastifyPlugin(server);
+  }
+
+  private initMiddlewares(
+    server: FastifyInstance,
+    middlewareConfigs: MiddlewareConfigUnion[],
+  ) {
+    return initMiddlewares(server, middlewareConfigs);
   }
 }
 

@@ -55,7 +55,7 @@ export class ElizaController implements Service<typeof ElizaService> {
 }
 ```
 
-Create Fastify server, initialize controller and register ConnectRPC plugin.
+Create Fastify server, initialize controller and initialize ConnectRPC.
 ```TS
 const fastify = Fastify({
     logger: true,
@@ -63,7 +63,7 @@ const fastify = Fastify({
 
 new ElizaController();
 
-await ConnectRPC.registerFastifyPlugin(fastify);
+await ConnectRPC.init(fastify);
 
 try {
     await fastify.listen({ port: 3000 });
@@ -106,13 +106,13 @@ const fastify = Fastify({ logger: true });
 new ElizaController();
 new AuthMiddleware();
 
-await ConnectRPC.registerFastifyPlugin(fastify);
-
-ConnectRPC.initMiddlewares(fastify, [
+await ConnectRPC.init(fastify, {
+  middlewares: [
     middlewareConfig(AuthMiddleware), // Global - for all services and methods
     // middlewareConfig(AuthMiddleware, ElizaService), // for all ElizaService methods
     // middlewareConfig(AuthMiddleware, ElizaService, ['say']), // for specific method only
-]);
+  ]
+});
 
 await fastify.listen({ port: 3000 });
 ```
@@ -157,20 +157,21 @@ For type safety use `interceptorConfig` helper.
 ```TS
 import { interceptorConfig } from '@funduck/connectrpc-fastify';
 
-const fastify = Fastify({ logger: true });
+const fastify = Fastify({ logger: false });
 
 new AuthMiddleware();
 new LoggingInterceptor();
 new ElizaController();
 
 await ConnectRPC.init(fastify, {
+  logger: false,
   interceptors: [
     interceptorConfig(LoggingInterceptor), // Global - for all services and methods
     // interceptorConfig(LoggingInterceptor, ElizaService), // for all ElizaService methods
     // interceptorConfig(LoggingInterceptor, ElizaService, ['say']), // for specific method only
   ],
   middlewares: [
-    middlewareConfig(AuthMiddleware), // Global middleware
+    middlewareConfig(AuthMiddleware), // Global - for all services and methods
   ],
 });
 

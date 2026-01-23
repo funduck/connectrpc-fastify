@@ -55,16 +55,18 @@ export let logger: Logger = {
   },
 };
 
-export function setLogger(customLogger: Logger | false) {
-  if (customLogger === false) {
-    // Disable logging
-    logger = {
-      log: () => {},
-      error: () => {},
-      warn: () => {},
-      debug: () => {},
-      verbose: () => {},
-    };
+export function setLogger(customLogger: Logger | boolean) {
+  if (typeof customLogger == 'boolean') {
+    if (customLogger === false) {
+      // Disable logging
+      logger = {
+        log: () => {},
+        error: () => {},
+        warn: () => {},
+        debug: () => {},
+        verbose: () => {},
+      };
+    }
     return;
   }
   logger = customLogger;
