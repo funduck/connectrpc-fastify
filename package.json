@@ -1,6 +1,6 @@
 {
   "name": "@funduck/connectrpc-fastify",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "author": "Oleg Milekhin <qlfunduck@gmail.com>",
   "description": "Wrapper for official @connectrpc/connect and fastify. Simplifies configuration, type safe binding to controller, simplifies use of middlewares and guards.",
   "main": "dist/index.js",

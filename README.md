@@ -1,6 +1,8 @@
 # Connectrpc Fastify Wrapper
 <img src="./coverage/badge.svg" alt="Coverage Badge" />
 
+[github](https://github.com/funduck/connectrpc-fastify)
+
 !BETA
 
 Code is not production ready.
