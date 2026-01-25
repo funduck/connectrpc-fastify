@@ -3,13 +3,11 @@
 
 name: Node.js Package
 
-# Trigger on new release creation
+# Trigger on new release creation or manual trigger
 on:
   release:
     types: [created]
-
-# Manual trigger
-# on: workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   test-build-publish:
