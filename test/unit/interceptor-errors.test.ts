@@ -8,6 +8,7 @@ describe('Interceptors Error Handling', () => {
 
   beforeEach(() => {
     ConnectRPC.clear();
+    ConnectRPC.setStrictMode(true);
     processExitSpy = jest
       .spyOn(process, 'exit')
       .mockImplementation((code?: any) => {

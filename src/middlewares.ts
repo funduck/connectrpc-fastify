@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
+import { isStrictMode } from './config';
 import { createCustomContextValues } from './context-values';
 import {
   buildRouteConfigChecker,
@@ -47,27 +48,25 @@ function clearCustomContextValues(req: FastifyRequest['raw']) {
 
 export async function initMiddlewares(
   server: FastifyInstance,
-  middlewareConfigs: MiddlewareConfigUnion[],
+  configs: MiddlewareConfigUnion[],
 ) {
-  // Add context middleware first - this stores req/res and creates ContextValues for interceptors
-  server.addHook('onRequest', async (request, reply) => {
-    setupCustomContextValues(request.raw);
-
-    // Clean up the context when the response finishes
-    reply.raw.on('finish', () => {
-      clearCustomContextValues(request.raw);
-    });
-  });
+  const checkedConfigs: MiddlewareConfigUnion[] = [];
 
   // Check all registered middlewares
-  for (const config of middlewareConfigs) {
+  for (const config of configs) {
     const middlewareInstance = MiddlewareStore.getInstance(config.use);
 
     if (!middlewareInstance) {
       logger.error(
-        `Middleware ${config.use.name} not found in store. Did you forget to add MiddlewareStore.registerInstance(this) in the constructor? Or did you forget to instantiate the middleware?`,
+        `Middleware ${config.use.name} not found in store. Did you forget to add ConnectRPC.registerMiddleware(this) in the constructor? Or did you forget to instantiate the middleware?`,
       );
-      process.exit(1);
+      if (isStrictMode) {
+        logger.error(
+          'Exiting. To disable strict mode, set isStrictMode to false.',
+        );
+        process.exit(1);
+      }
+      continue;
     }
 
     const serviceInfo = config.on
@@ -79,9 +78,25 @@ export async function initMiddlewares(
     logger.log(
       `Registered middleware: ${config.use.name}${serviceInfo}${methodInfo}`,
     );
+
+    checkedConfigs.push(config);
   }
 
-  const routeChecker = buildRouteConfigChecker(middlewareConfigs);
+  if (!checkedConfigs.length) {
+    return;
+  }
+
+  // Add context middleware first - this stores req/res and creates ContextValues for interceptors
+  server.addHook('onRequest', async (request, reply) => {
+    setupCustomContextValues(request.raw);
+
+    // Clean up the context when the response finishes
+    reply.raw.on('finish', () => {
+      clearCustomContextValues(request.raw);
+    });
+  });
+
+  const routeChecker = buildRouteConfigChecker(checkedConfigs);
 
   server.addHook('onRequest', async (request, reply) => {
     const url = request.url as string;

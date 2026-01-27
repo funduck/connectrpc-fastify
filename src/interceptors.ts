@@ -1,4 +1,5 @@
 import type { Interceptor } from '@connectrpc/connect';
+import { isStrictMode } from './config';
 import {
   controllerClassContextKey,
   controllerMethodContextKey,
@@ -50,18 +51,38 @@ export const contextInterceptor: Interceptor = (next) => async (req) => {
 export let initializedInterceptors: Interceptor[] = [];
 
 export function initInterceptors(configs: InterceptorConfigUnion[]) {
-  const routeChecker = buildRouteConfigChecker(configs);
-  initializedInterceptors = [];
+  const checkedConfigs: InterceptorConfigUnion[] = [];
 
+  // Check all registered interceptors
   for (const config of configs) {
     const interceptorInstance = InterceptorStore.getInstance(config.use);
 
     if (!interceptorInstance) {
       logger.error(
-        `Interceptor ${config.use.name} not registered. Make sure to decorate it with @Interceptor().`,
+        `Interceptor ${config.use.name} not found in store. Did you forget to add ConnectRPC.registerInterceptor(this) in the constructor? Or did you forget to instantiate the interceptor?`,
       );
-      process.exit(1);
+      if (isStrictMode) {
+        logger.error(
+          'Exiting. To disable strict mode, set isStrictMode to false.',
+        );
+        process.exit(1);
+      }
+      continue;
     }
+
+    checkedConfigs.push(config);
+  }
+
+  if (!checkedConfigs.length) {
+    initializedInterceptors = [];
+    return;
+  }
+
+  const routeChecker = buildRouteConfigChecker(checkedConfigs);
+  initializedInterceptors = [];
+
+  for (const config of checkedConfigs) {
+    const interceptorInstance = InterceptorStore.getInstance(config.use)!;
 
     // Create the interceptor function that checks route configs before applying
     const interceptor: Interceptor = (next) => async (req) => {

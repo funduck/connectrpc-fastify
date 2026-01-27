@@ -1,5 +1,6 @@
 import { GenService, GenServiceMethods } from '@bufbuild/protobuf/codegenv2';
 import { FastifyInstance } from 'fastify';
+import { setStrictMode } from './config';
 import { registerFastifyPlugin } from './fastify-plugin';
 import { setLogger } from './helpers';
 import { initInterceptors } from './interceptors';
@@ -22,6 +23,10 @@ import {
 class ConnectRPCClass {
   setLogger(customLogger: Logger | boolean) {
     setLogger(customLogger);
+  }
+
+  setStrictMode(isStrict: boolean) {
+    setStrictMode(isStrict);
   }
 
   /** Should be called in middleware constructor */
@@ -63,12 +68,13 @@ class ConnectRPCClass {
     }
   }
 
-  /** Clear all registered controllers, routes, middlewares, and interceptors. Useful for testing */
+  /** Clear all registered controllers, routes, middlewares, and interceptors, reset strict mode. Useful for testing */
   clear() {
     ControllersStore.clear();
     RouteMetadataStore.clear();
     MiddlewareStore.clear();
     InterceptorStore.clear();
+    setStrictMode(false);
   }
 
   initInterceptors(configs: InterceptorConfigUnion[]) {

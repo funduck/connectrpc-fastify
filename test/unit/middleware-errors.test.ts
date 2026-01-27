@@ -10,6 +10,7 @@ describe('Middlewares Error Handling', () => {
 
   beforeEach(async () => {
     ConnectRPC.clear();
+    ConnectRPC.setStrictMode(true);
     fastify = Fastify({ logger: false });
     processExitSpy = jest
       .spyOn(process, 'exit')
