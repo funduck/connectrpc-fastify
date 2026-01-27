@@ -1,6 +1,6 @@
 import { GenService, GenServiceMethods } from '@bufbuild/protobuf/codegenv2';
 import { FastifyInstance } from 'fastify';
-import { setStrictMode } from './config';
+import { isStrictMode, setStrictMode } from './config';
 import { registerFastifyPlugin } from './fastify-plugin';
 import { setLogger } from './helpers';
 import { initInterceptors } from './interceptors';
@@ -27,6 +27,10 @@ class ConnectRPCClass {
 
   setStrictMode(isStrict: boolean) {
     setStrictMode(isStrict);
+  }
+
+  get isStrictMode() {
+    return isStrictMode;
   }
 
   /** Should be called in middleware constructor */

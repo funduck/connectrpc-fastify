@@ -210,5 +210,12 @@ const authValue = context.values.get(authKey);
 
 **Note:** Context values set in middlewares are automatically available in interceptors and controllers. Interceptors can also access and modify context values using `req.contextValues`.
 
+## Strict Mode
+If **strict mode** is enabled the library will cause process to exit on errors such as missing middleware or interceptor instances.  
+By default, strict mode is disabled to allow more flexibility during development.
+
+To enable it call `ConnectRPC.setStrictMode(true)` before registering any middlewares or interceptors.  
+To check it read `ConnectRPC.isStrictMode` property.
+
 ## Feedback
 Please use [Discussions](https://github.com/funduck/connectrpc-fastify/discussions) or email me.
