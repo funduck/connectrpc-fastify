@@ -3,7 +3,12 @@ import { ConnectRPC, middlewareConfig } from '../../src/index';
 import { interceptorConfig } from '../../src/interfaces';
 import { ElizaController } from './controller';
 import { ElizaService } from './gen/connectrpc/eliza/v1/eliza_pb';
-import { MetadataReaderInterceptor, TestInterceptor1 } from './interceptors';
+import {
+  MetadataReaderInterceptor,
+  TestInterceptor1,
+  TestInterceptor2,
+  TestInterceptor3,
+} from './interceptors';
 import {
   TestMiddleware1,
   TestMiddleware2,
@@ -15,8 +20,11 @@ export async function bootstrap() {
     logger: true,
   });
 
-  // Declare a route
+  // Declare regular routes
   fastify.get('/', async function handler(request, reply) {
+    return { hello: 'world' };
+  });
+  fastify.get('/hello', async function handler(request, reply) {
     return { hello: 'world' };
   });
 
@@ -27,12 +35,16 @@ export async function bootstrap() {
   new TestMiddleware3();
 
   new TestInterceptor1();
+  new TestInterceptor2();
+  new TestInterceptor3();
   new MetadataReaderInterceptor();
 
   await ConnectRPC.init(fastify, {
     interceptors: [
       interceptorConfig(MetadataReaderInterceptor, ElizaService), // Metadata reader interceptor
-      interceptorConfig(TestInterceptor1, ElizaService), // Interceptor for all ElizaService methods
+      interceptorConfig(TestInterceptor1), // Global interceptor for all services and methods
+      interceptorConfig(TestInterceptor2, ElizaService), // Interceptor for all ElizaService methods
+      interceptorConfig(TestInterceptor3, ElizaService, ['say']), // Interceptor for ElizaService's say method only
     ],
     middlewares: [
       middlewareConfig(TestMiddleware1), // Global middleware for all services and methods

@@ -6,17 +6,14 @@ import {
   TestInterceptor2,
   TestInterceptor3,
 } from '../demo/interceptors';
-import {
-  resetInterceptorCallbacks,
-  setupTestServerWithInterceptors,
-} from './test-helpers';
+import { resetInterceptorCallbacks, setupTestServer } from './test-helpers';
 
 describe('Interceptor Access to Request Data', () => {
   let client: Client<typeof ElizaService>;
   let cleanup: () => Promise<void>;
 
   beforeAll(async () => {
-    const setup = await setupTestServerWithInterceptors();
+    const setup = await setupTestServer();
     client = setup.client;
     cleanup = setup.cleanup;
   });
@@ -162,7 +159,7 @@ describe('Controller Receives Data from Interceptors', () => {
   let cleanup: () => Promise<void>;
 
   beforeAll(async () => {
-    const setup = await setupTestServerWithInterceptors();
+    const setup = await setupTestServer();
     client = setup.client;
     cleanup = setup.cleanup;
   });
@@ -201,7 +198,7 @@ describe('Interceptor Execution Order', () => {
   let cleanup: () => Promise<void>;
 
   beforeAll(async () => {
-    const setup = await setupTestServerWithInterceptors();
+    const setup = await setupTestServer();
     client = setup.client;
     cleanup = setup.cleanup;
   });

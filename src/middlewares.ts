@@ -1,13 +1,9 @@
-import { FastifyInstance, FastifyRequest } from 'fastify';
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { isStrictMode } from './config';
 import { createCustomContextValues } from './context-values';
-import {
-  buildRouteConfigChecker,
-  callMiddlewareAsync,
-  generateRequestId,
-  logger,
-} from './helpers';
-import { MiddlewareConfigUnion } from './interfaces';
+import { generateRequestId, logger } from './helpers';
+import { Middleware, MiddlewareConfigUnion } from './interfaces';
+import { buildRouteConfigChecker } from './route-config-checker';
 import { MiddlewareContextStore, MiddlewareStore } from './stores';
 
 export const xServerRequestIdHeader = 'x-server-request-id';
@@ -112,6 +108,26 @@ export async function initMiddlewares(
       if (!reply.sent) {
         reply.status(500).send({ error: 'Internal Server Error' });
       }
+    }
+  });
+}
+
+function callMiddlewareAsync(
+  middleware: Middleware,
+  req: FastifyRequest,
+  res: FastifyReply,
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    try {
+      middleware.use(req.raw, res.raw, (err?: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    } catch (error) {
+      reject(error);
     }
   });
 }

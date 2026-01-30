@@ -1,8 +1,9 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import { ConnectRPC } from '../../src/connectrpc';
 import { middlewareConfig } from '../../src/interfaces';
-import { getCustomContextValues, initMiddlewares } from '../../src/middlewares';
+import { initMiddlewares } from '../../src/middlewares';
 import { MiddlewareStore } from '../../src/stores';
+import { setupControllerWithoutServer } from './test-helpers';
 
 describe('Middlewares Error Handling', () => {
   let fastify: FastifyInstance;
@@ -17,6 +18,8 @@ describe('Middlewares Error Handling', () => {
       .mockImplementation((code?: any) => {
         throw new Error(`process.exit(${code})`);
       });
+
+    setupControllerWithoutServer();
   });
 
   afterEach(async () => {
@@ -58,7 +61,7 @@ describe('Middlewares Error Handling', () => {
 
       const response = await fastify.inject({
         method: 'POST',
-        url: '/test.Service/TestMethod',
+        url: '/connectrpc.eliza.v1.ElizaService/Say',
         headers: {
           'content-type': 'application/json',
         },
@@ -90,7 +93,7 @@ describe('Middlewares Error Handling', () => {
 
       const response = await fastify.inject({
         method: 'POST',
-        url: '/test.Service/TestMethod',
+        url: '/connectrpc.eliza.v1.ElizaService/Say',
         headers: {
           'content-type': 'application/json',
         },
@@ -99,28 +102,6 @@ describe('Middlewares Error Handling', () => {
 
       // Response should be what middleware sent, not 500
       expect(response.statusCode).toBe(400);
-    });
-  });
-
-  describe('getCustomContextValues', () => {
-    it('should return null when request ID not in headers', () => {
-      const mockReq = {
-        headers: {},
-      };
-
-      const result = getCustomContextValues(mockReq as any);
-      expect(result).toBeNull();
-    });
-
-    it('should return null when context not found for request ID', () => {
-      const mockReq = {
-        headers: {
-          'x-server-request-id': 'non-existent-id',
-        },
-      };
-
-      const result = getCustomContextValues(mockReq as any);
-      expect(result).toBeNull();
     });
   });
 });

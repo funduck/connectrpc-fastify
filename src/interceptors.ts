@@ -4,9 +4,10 @@ import {
   controllerClassContextKey,
   controllerMethodContextKey,
 } from './context-values';
-import { buildRouteConfigChecker, getURLPath, logger } from './helpers';
+import { getURLPath, logger } from './helpers';
 import { InterceptorConfigUnion } from './interfaces';
 import { xServerRequestIdHeader } from './middlewares';
+import { buildRouteConfigChecker } from './route-config-checker';
 import {
   InterceptorStore,
   MiddlewareContextStore,

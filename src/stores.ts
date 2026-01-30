@@ -104,7 +104,7 @@ class RouteMetadataStoreClass {
    * @param methodName - The method name in PascalCase (e.g., "Say")
    * @param controllerClass - The controller class
    * @param controllerMethod - The bound controller method
-   * @param controllerMethodName - The name of the controller method
+   * @param controllerMethodName - The name of the controller method (e.g., "say")
    * @param instance - The controller instance
    */
   registerRoute(

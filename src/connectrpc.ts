@@ -1,6 +1,7 @@
 import { GenService, GenServiceMethods } from '@bufbuild/protobuf/codegenv2';
 import { FastifyInstance } from 'fastify';
 import { isStrictMode, setStrictMode } from './config';
+import { initControllers } from './controllers';
 import { registerFastifyPlugin } from './fastify-plugin';
 import { setLogger } from './helpers';
 import { initInterceptors } from './interceptors';
@@ -63,6 +64,7 @@ class ConnectRPCClass {
     if (options?.logger != null) {
       this.setLogger(options.logger);
     }
+    this.initControllers();
     if (options?.interceptors) {
       this.initInterceptors(options.interceptors);
     }
@@ -83,6 +85,10 @@ class ConnectRPCClass {
 
   initInterceptors(configs: InterceptorConfigUnion[]) {
     initInterceptors(configs);
+  }
+
+  initControllers() {
+    initControllers();
   }
 
   registerFastifyPlugin(server: FastifyInstance) {
