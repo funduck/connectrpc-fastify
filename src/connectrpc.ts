@@ -52,7 +52,7 @@ class ConnectRPCClass {
     ControllersStore.registerInstance(self, service);
   }
 
-  /** Initialize ConnectRPC with interceptors, Fastify plugin, and middlewares */
+  /** Initialize ConnectRPC with controllers, interceptors, Fastify plugin, and middlewares */
   async init(
     server: FastifyInstance,
     options?: {
@@ -83,18 +83,22 @@ class ConnectRPCClass {
     setStrictMode(false);
   }
 
-  initInterceptors(configs: InterceptorConfigUnion[]) {
-    initInterceptors(configs);
-  }
-
+  /** Initialize controllers. Should be called before initInterceptors because they need registered routes. */
   initControllers() {
     initControllers();
   }
 
+  /** Initialize interceptors. Should be called after initControllers because needs registered routes. */
+  initInterceptors(configs: InterceptorConfigUnion[]) {
+    initInterceptors(configs);
+  }
+
+  /** Register Fastify plugin. Requires initialized server, controllers and interceptors. */
   registerFastifyPlugin(server: FastifyInstance) {
     return registerFastifyPlugin(server);
   }
 
+  /** Initialize middlewares. Should be called after registerFastifyPlugin because requires initialized server with registered plugin */
   initMiddlewares(
     server: FastifyInstance,
     middlewareConfigs: MiddlewareConfigUnion[],
