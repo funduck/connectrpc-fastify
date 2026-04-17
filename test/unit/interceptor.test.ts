@@ -1,4 +1,5 @@
 import { Client, createContextKey } from '@connectrpc/connect';
+import { setLogger } from '../../src/helpers';
 import { ElizaController } from '../demo/controller';
 import { ElizaService } from '../demo/gen/connectrpc/eliza/v1/eliza_pb';
 import {
@@ -13,6 +14,7 @@ describe('Interceptor Access to Request Data', () => {
   let cleanup: () => Promise<void>;
 
   beforeAll(async () => {
+    setLogger(false);
     const setup = await setupTestServer();
     client = setup.client;
     cleanup = setup.cleanup;

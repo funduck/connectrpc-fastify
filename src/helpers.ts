@@ -19,6 +19,10 @@ export let logger: Logger = {
   },
 };
 
+export function getLogger(): Logger {
+  return logger;
+}
+
 export function setLogger(customLogger: Logger | boolean) {
   if (typeof customLogger == 'boolean') {
     if (customLogger === false) {

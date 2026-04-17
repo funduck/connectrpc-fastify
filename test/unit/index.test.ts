@@ -1,6 +1,11 @@
+import { setLogger } from '../../src/helpers';
 import { printMsg } from '../../src/index';
 
 describe('index.ts exports', () => {
+  beforeAll(() => {
+    setLogger(false);
+  });
+
   describe('printMsg', () => {
     let consoleErrorSpy: jest.SpyInstance;
 

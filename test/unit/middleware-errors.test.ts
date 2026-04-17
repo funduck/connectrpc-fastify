@@ -1,5 +1,6 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import { ConnectRPC } from '../../src/connectrpc';
+import { setLogger } from '../../src/helpers';
 import { middlewareConfig } from '../../src/interfaces';
 import { initMiddlewares } from '../../src/middlewares';
 import { MiddlewareStore } from '../../src/stores';
@@ -8,6 +9,10 @@ import { setupControllerWithoutServer } from './test-helpers';
 describe('Middlewares Error Handling', () => {
   let fastify: FastifyInstance;
   let processExitSpy: jest.SpyInstance;
+
+  beforeAll(() => {
+    setLogger(false);
+  });
 
   beforeEach(async () => {
     ConnectRPC.clear();

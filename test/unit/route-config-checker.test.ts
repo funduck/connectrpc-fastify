@@ -1,4 +1,5 @@
 import { ConnectRPC } from '../../src';
+import { setLogger } from '../../src/helpers';
 import { RouteConfigGlobal, RouteConfigService } from '../../src/interfaces';
 import { buildRouteConfigChecker } from '../../src/route-config-checker';
 import { ElizaService } from '../demo/gen/connectrpc/eliza/v1/eliza_pb';
@@ -6,6 +7,7 @@ import { setupControllerWithoutServer } from './test-helpers';
 
 describe('Route config checker', () => {
   beforeAll(() => {
+    setLogger(false);
     ConnectRPC.clear();
     setupControllerWithoutServer();
   });

@@ -1,4 +1,5 @@
 import { createCustomContextValues } from '../../src/context-values';
+import { setLogger } from '../../src/helpers';
 import {
   ControllersStore,
   InterceptorStore,
@@ -8,6 +9,10 @@ import {
 } from '../../src/stores';
 
 describe('Stores', () => {
+  beforeAll(() => {
+    setLogger(false);
+  });
+
   beforeEach(() => {
     ControllersStore.clear();
     MiddlewareStore.clear();

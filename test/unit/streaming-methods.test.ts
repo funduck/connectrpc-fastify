@@ -1,5 +1,6 @@
 import { create } from '@bufbuild/protobuf';
 import { Client } from '@connectrpc/connect';
+import { setLogger } from '../../src/helpers';
 import { ElizaController } from '../demo/controller';
 import {
   ElizaService,
@@ -23,6 +24,7 @@ describe('Server Streaming RPC Methods', () => {
   let cleanup: () => Promise<void>;
 
   beforeAll(async () => {
+    setLogger(false);
     const setup = await setupTestServer();
     client = setup.client;
     cleanup = setup.cleanup;

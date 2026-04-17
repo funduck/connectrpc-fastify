@@ -4,7 +4,7 @@ import {
   controllerClassContextKey,
   controllerMethodContextKey,
 } from './context-values';
-import { getURLPath, logger } from './helpers';
+import { getLogger, getURLPath } from './helpers';
 import { InterceptorConfigUnion } from './interfaces';
 import { xServerRequestIdHeader } from './middlewares';
 import { buildRouteConfigChecker } from './route-config-checker';
@@ -59,11 +59,11 @@ export function initInterceptors(configs: InterceptorConfigUnion[]) {
     const interceptorInstance = InterceptorStore.getInstance(config.use);
 
     if (!interceptorInstance) {
-      logger.error(
+      getLogger().error(
         `Interceptor ${config.use.name} not found in store. Did you forget to add ConnectRPC.registerInterceptor(this) in the constructor? Or did you forget to instantiate the interceptor?`,
       );
       if (isStrictMode) {
-        logger.error(
+        getLogger().error(
           'Exiting. To disable strict mode, set isStrictMode to false.',
         );
         process.exit(1);
@@ -104,7 +104,7 @@ export function initInterceptors(configs: InterceptorConfigUnion[]) {
     const methodInfo = config.methods
       ? ` methods [${config.methods.join(', ')}]`
       : ' all methods';
-    logger.log(
+    getLogger().log(
       `Registered interceptor: ${config.use.name}${serviceInfo}${methodInfo}`,
     );
   }

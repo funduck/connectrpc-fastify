@@ -1,10 +1,15 @@
 import { ConnectRPC } from '../../src/connectrpc';
+import { setLogger } from '../../src/helpers';
 import { initInterceptors } from '../../src/interceptors';
 import { interceptorConfig } from '../../src/interfaces';
 import { InterceptorStore } from '../../src/stores';
 
 describe('Interceptors Error Handling', () => {
   let processExitSpy: jest.SpyInstance;
+
+  beforeAll(() => {
+    setLogger(false);
+  });
 
   beforeEach(() => {
     ConnectRPC.clear();

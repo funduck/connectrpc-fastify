@@ -3,7 +3,7 @@ import { fastifyConnectPlugin } from '@connectrpc/connect-fastify';
 import { Compression } from '@connectrpc/connect/protocol';
 import { FastifyInstance } from 'fastify';
 import { implementations } from './controllers';
-import { logger } from './helpers';
+import { getLogger } from './helpers';
 import { contextInterceptor, initializedInterceptors } from './interceptors';
 
 export async function registerFastifyPlugin(
@@ -15,12 +15,12 @@ export async function registerFastifyPlugin(
   const routes = (router: ConnectRouter) => {
     for (const [service, implementation] of implementations.entries()) {
       router.service(service, implementation);
-      logger.log(`Registered {/${service.typeName}} route`);
+      getLogger().log(`Registered {/${service.typeName}} route`);
     }
   };
 
   if (routes.length === 0) {
-    logger.warn('No controllers found to register');
+    getLogger().warn('No controllers found to register');
     return;
   }
 
@@ -37,5 +37,5 @@ export async function registerFastifyPlugin(
     routes: routes,
   });
 
-  logger.log('Ready');
+  getLogger().log('Ready');
 }

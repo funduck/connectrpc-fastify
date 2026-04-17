@@ -1,5 +1,5 @@
 import { GenService } from '@bufbuild/protobuf/codegenv2';
-import { logger, methodNameInController } from './helpers';
+import { getLogger, methodNameInController } from './helpers';
 import { ControllersStore, RouteMetadataStore } from './stores';
 
 /** Here we will setup initialized implementstions for services */
@@ -35,11 +35,11 @@ export function initControllers() {
             instance,
           );
 
-          logger.log(
+          getLogger().log(
             `Binding ${instance.constructor.name}.${controllerMethodName} to ${service.typeName}.${methodName}`,
           );
         } else {
-          logger.warn(
+          getLogger().warn(
             `Method ${controllerMethodName} not found in ${instance.constructor.name}`,
           );
         }

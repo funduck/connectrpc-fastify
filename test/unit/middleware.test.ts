@@ -1,6 +1,7 @@
 import { Client, createContextKey } from '@connectrpc/connect';
 import { IncomingMessage, ServerResponse } from 'http';
 import { getCustomContextValues } from '../../src';
+import { setLogger } from '../../src/helpers';
 import { ElizaController } from '../demo/controller';
 import { ElizaService } from '../demo/gen/connectrpc/eliza/v1/eliza_pb';
 import {
@@ -15,6 +16,7 @@ describe('Middleware Access to Request Headers and Data', () => {
   let cleanup: () => Promise<void>;
 
   beforeAll(async () => {
+    setLogger(false);
     const setup = await setupTestServer();
     client = setup.client;
     cleanup = setup.cleanup;

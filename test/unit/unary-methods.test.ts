@@ -1,4 +1,5 @@
 import { Client } from '@connectrpc/connect';
+import { setLogger } from '../../src/helpers';
 import { ElizaController } from '../demo/controller';
 import { ElizaService } from '../demo/gen/connectrpc/eliza/v1/eliza_pb';
 import { resetMiddlewareCallbacks, setupTestServer } from './test-helpers';
@@ -8,6 +9,7 @@ describe('Unary RPC Methods', () => {
   let cleanup: () => Promise<void>;
 
   beforeAll(async () => {
+    setLogger(false);
     const setup = await setupTestServer();
     client = setup.client;
     cleanup = setup.cleanup;

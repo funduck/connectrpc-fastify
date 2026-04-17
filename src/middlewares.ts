@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { isStrictMode } from './config';
 import { createCustomContextValues } from './context-values';
-import { generateRequestId, logger } from './helpers';
+import { generateRequestId, getLogger } from './helpers';
 import { Middleware, MiddlewareConfigUnion } from './interfaces';
 import { buildRouteConfigChecker } from './route-config-checker';
 import { MiddlewareContextStore, MiddlewareStore } from './stores';
@@ -53,11 +53,11 @@ export async function initMiddlewares(
     const middlewareInstance = MiddlewareStore.getInstance(config.use);
 
     if (!middlewareInstance) {
-      logger.error(
+      getLogger().error(
         `Middleware ${config.use.name} not found in store. Did you forget to add ConnectRPC.registerMiddleware(this) in the constructor? Or did you forget to instantiate the middleware?`,
       );
       if (isStrictMode) {
-        logger.error(
+        getLogger().error(
           'Exiting. To disable strict mode, set isStrictMode to false.',
         );
         process.exit(1);
@@ -71,7 +71,7 @@ export async function initMiddlewares(
     const methodInfo = config.methods
       ? ` methods [${config.methods.join(', ')}]`
       : ' all methods';
-    logger.log(
+    getLogger().log(
       `Registered middleware: ${config.use.name}${serviceInfo}${methodInfo}`,
     );
 
@@ -104,7 +104,10 @@ export async function initMiddlewares(
         await callMiddlewareAsync(middlewareInstance, request, reply);
       }
     } catch (error) {
-      logger.error(`Error in middleware for request ${request.url}:`, error);
+      getLogger().error(
+        `Error in middleware for request ${request.url}:`,
+        error,
+      );
       if (!reply.sent) {
         reply.status(500).send({ error: 'Internal Server Error' });
       }

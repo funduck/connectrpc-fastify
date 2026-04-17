@@ -5,9 +5,14 @@ import {
   controllerMethodContextKey,
   createCustomContextValues,
 } from '../../src/context-values';
+import { setLogger } from '../../src/helpers';
 
 describe('CustomContextValues', () => {
   let contextValues: CustomContextValues;
+
+  beforeAll(() => {
+    setLogger(false);
+  });
 
   beforeEach(() => {
     contextValues = new CustomContextValues();

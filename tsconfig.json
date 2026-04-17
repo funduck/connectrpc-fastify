@@ -16,6 +16,7 @@
     "allowJs": false,
     "outDir": "dist",
     "esModuleInterop": true,
-    "declaration": true
+    "declaration": true,
+    "types": ["jest", "node"]
   }
 }
